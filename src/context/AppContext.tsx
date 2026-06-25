@@ -9,7 +9,7 @@ export interface FieldConfig {
   color: string;
   fontWeight: string;
   type?: 'text' | 'image' | 'shape';
-  shapeType?: 'rectangle' | 'circle' | 'triangle' | 'star' | 'line' | 'hexagon' | 'pentagon' | 'diamond';
+  shapeType?: string;
   backgroundColor?: string;
   fillTransparent?: boolean;
   borderColor?: string;

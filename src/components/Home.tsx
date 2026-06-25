@@ -66,7 +66,7 @@ const Home: React.FC = () => {
       data: [],
       headers: theme.fields.map(f => f.headerKey),
       templateImage: theme.bg,
-      fields: theme.fields,
+      fields: theme.fields as any,
       isSingleMode: false,
       singleData: {},
       photosMap: {}

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';

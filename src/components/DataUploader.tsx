@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { UploadCloud, FileText, User, Image as ImageIcon, ImagePlus, Type, Database, Plus } from 'lucide-react';

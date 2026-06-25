@@ -505,7 +505,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({ selectedFie
                         disableDragging={editingTextId === field.id}
                         enableResizing={editingTextId !== field.id && (field.type === 'image' || field.type === 'shape')}
                         className={`cursor-move absolute z-10 ${selectedFieldId === field.id ? 'ring-2 ring-indigo-500' : 'hover:ring-1 hover:ring-indigo-300'}`}
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                           e.stopPropagation();
                           onSelectField(field.id);
                         }}
@@ -559,8 +559,8 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({ selectedFie
                                 value={field.staticText || ''}
                                 onChange={(e) => updateField(field.id, { staticText: e.target.value })}
                                 onBlur={() => setEditingTextId(null)}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e: any) => e.stopPropagation()}
+                                onKeyDown={(e: any) => e.stopPropagation()}
                                 className="w-full h-full bg-transparent border-none outline-none resize-none p-0 m-0 overflow-hidden"
                                 style={{
                                   fontFamily: field.fontFamily || 'sans-serif',

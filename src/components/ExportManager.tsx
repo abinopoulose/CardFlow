@@ -360,7 +360,7 @@ const ExportManager: React.FC = () => {
           } else if (isSingleMode) {
             val = singleData[field.headerKey];
           } else {
-            const idNumber = row['id_number'];
+            const idNumber = rowData['id_number'];
             if (idNumber && photosMap[field.headerKey]?.[String(idNumber)]) {
               val = photosMap[field.headerKey][String(idNumber)];
             }
