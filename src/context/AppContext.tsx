@@ -8,93 +8,214 @@ export interface FieldConfig {
   fontSize: number;
   color: string;
   fontWeight: string;
-  type?: 'text' | 'image';
+  type?: 'text' | 'image' | 'shape';
+  shapeType?: 'rectangle' | 'circle' | 'triangle' | 'star' | 'line' | 'hexagon' | 'pentagon' | 'diamond';
+  backgroundColor?: string;
+  fillTransparent?: boolean;
+  borderColor?: string;
+  borderTransparent?: boolean;
+  borderWidth?: number;
+  borderRadius?: number;
+  fontFamily?: string;
   width?: number;
   height?: number;
+  isStatic?: boolean;
+  staticImage?: string;
+  staticText?: string;
 }
 
-interface AppState {
+export interface Project {
+  id: string;
+  name: string;
+  updatedAt: number;
+  width: number;
+  height: number;
   data: any[];
   headers: string[];
   templateImage: string | null;
   fields: FieldConfig[];
   isSingleMode: boolean;
   singleData: Record<string, any>;
-  photosMap: Record<string, string>;
-  setData: (data: any[]) => void;
-  setHeaders: (headers: string[]) => void;
-  setTemplateImage: (image: string | null) => void;
-  setFields: (fields: FieldConfig[] | ((prev: FieldConfig[]) => FieldConfig[])) => void;
-  setIsSingleMode: (val: boolean) => void;
-  setSingleData: (data: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => void;
-  setPhotosMap: (map: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  photosMap: Record<string, Record<string, string>>;
+}
+
+interface AppState {
+  projects: Project[];
+  currentProjectId: string | null;
+  setCurrentProjectId: (id: string | null) => void;
+  createProject: (project: Omit<Project, 'id' | 'updatedAt'>) => string;
+  updateCurrentProject: (updates: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
+  currentProject: Project | null;
+  
+  // History
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [data, setData] = useState<any[]>([]);
-  const [headers, setHeaders] = useState<string[]>([]);
-  const [templateImage, setTemplateImage] = useState<string | null>(null);
-  const [fields, setFields] = useState<FieldConfig[]>([]);
-  const [isSingleMode, setIsSingleMode] = useState<boolean>(false);
-  const [singleData, setSingleData] = useState<Record<string, any>>({});
-  const [photosMap, setPhotosMap] = useState<Record<string, string>>({});
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(
+    localStorage.getItem('idcardgen_current_project')
+  );
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const [past, setPast] = useState<Project[]>([]);
+  const [future, setFuture] = useState<Project[]>([]);
+
+  // Clear history on project change
+  useEffect(() => {
+    setPast([]);
+    setFuture([]);
+  }, [currentProjectId]);
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('idcardgen_state');
+      const saved = localStorage.getItem('idcardgen_projects');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.data) setData(parsed.data);
-        if (parsed.headers) setHeaders(parsed.headers);
-        if (parsed.templateImage) setTemplateImage(parsed.templateImage);
-        if (parsed.fields) setFields(parsed.fields);
-        if (parsed.isSingleMode !== undefined) setIsSingleMode(parsed.isSingleMode);
-        if (parsed.singleData) setSingleData(parsed.singleData);
-        if (parsed.photosMap) setPhotosMap(parsed.photosMap);
+        setProjects(JSON.parse(saved));
+      } else {
+        const oldState = localStorage.getItem('idcardgen_state');
+        if (oldState) {
+          const parsed = JSON.parse(oldState);
+          const migratedProject: Project = {
+            id: 'legacy-project',
+            name: 'Legacy Project',
+            updatedAt: Date.now(),
+            width: 400,
+            height: 600,
+            data: parsed.data || [],
+            headers: parsed.headers || [],
+            templateImage: parsed.templateImage || null,
+            fields: parsed.fields || [],
+            isSingleMode: parsed.isSingleMode || false,
+            singleData: parsed.singleData || {},
+            photosMap: {} // Reset legacy photosMap due to schema change
+          };
+          setProjects([migratedProject]);
+        }
       }
     } catch (e) {
-      console.error('Failed to load state from localStorage', e);
+      console.error('Failed to load projects from localStorage', e);
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
-  // Save to localStorage on change
+  // Save to localStorage whenever projects change
   useEffect(() => {
-    try {
-      const stateToSave = {
-        data,
-        headers,
-        templateImage,
-        fields,
-        isSingleMode,
-        singleData,
-        photosMap
-      };
-      localStorage.setItem('idcardgen_state', JSON.stringify(stateToSave));
-    } catch (e) {
-      console.warn('Failed to save to localStorage. Image might be too large.', e);
+    if (isLoaded) {
+      try {
+        localStorage.setItem('idcardgen_projects', JSON.stringify(projects));
+      } catch (e) {
+        console.warn('Failed to save to localStorage. Storage quota exceeded.', e);
+      }
     }
-  }, [data, headers, templateImage, fields, isSingleMode, singleData, photosMap]);
+  }, [projects, isLoaded]);
+
+  // Persist currentProjectId
+  useEffect(() => {
+    if (currentProjectId) {
+      localStorage.setItem('idcardgen_current_project', currentProjectId);
+    } else {
+      localStorage.removeItem('idcardgen_current_project');
+    }
+  }, [currentProjectId]);
+
+  const createProject = (config: Omit<Project, 'id' | 'updatedAt'>) => {
+    const newProject: Project = {
+      ...config,
+      id: Math.random().toString(36).substr(2, 9),
+      updatedAt: Date.now(),
+    };
+    setProjects(prev => [...prev, newProject]);
+    setCurrentProjectId(newProject.id);
+    return newProject.id;
+  };
+
+  const updateCurrentProject = (updates: Partial<Project>) => {
+    if (!currentProjectId) return;
+    setProjects(prev => {
+      const pIndex = prev.findIndex(p => p.id === currentProjectId);
+      if (pIndex === -1) return prev;
+      
+      const currentP = prev[pIndex];
+      setPast(oldPast => {
+        const next = [...oldPast, currentP];
+        if (next.length > 50) return next.slice(next.length - 50);
+        return next;
+      });
+      setFuture([]);
+
+      const updatedP = { ...currentP, ...updates, updatedAt: Date.now() };
+      const newProjects = [...prev];
+      newProjects[pIndex] = updatedP;
+      return newProjects;
+    });
+  };
+
+  const undo = () => {
+    if (!currentProjectId || past.length === 0) return;
+    setProjects(prev => {
+      const pIndex = prev.findIndex(p => p.id === currentProjectId);
+      if (pIndex === -1) return prev;
+      
+      const currentP = prev[pIndex];
+      const previousP = past[past.length - 1];
+      
+      setFuture(oldFuture => [currentP, ...oldFuture]);
+      setPast(oldPast => oldPast.slice(0, -1));
+      
+      const newProjects = [...prev];
+      newProjects[pIndex] = previousP;
+      return newProjects;
+    });
+  };
+
+  const redo = () => {
+    if (!currentProjectId || future.length === 0) return;
+    setProjects(prev => {
+      const pIndex = prev.findIndex(p => p.id === currentProjectId);
+      if (pIndex === -1) return prev;
+      
+      const currentP = prev[pIndex];
+      const nextP = future[0];
+      
+      setPast(oldPast => [...oldPast, currentP]);
+      setFuture(oldFuture => oldFuture.slice(1));
+      
+      const newProjects = [...prev];
+      newProjects[pIndex] = nextP;
+      return newProjects;
+    });
+  };
+
+  const deleteProject = (id: string) => {
+    setProjects(prev => prev.filter(p => p.id !== id));
+    if (currentProjectId === id) setCurrentProjectId(null);
+  };
+
+  const currentProject = projects.find(p => p.id === currentProjectId) || null;
 
   return (
     <AppContext.Provider
       value={{
-        data,
-        headers,
-        templateImage,
-        fields,
-        isSingleMode,
-        singleData,
-        photosMap,
-        setData,
-        setHeaders,
-        setTemplateImage,
-        setFields,
-        setIsSingleMode,
-        setSingleData,
-        setPhotosMap,
+        projects,
+        currentProjectId,
+        setCurrentProjectId,
+        createProject,
+        updateCurrentProject,
+        deleteProject,
+        currentProject,
+        undo,
+        redo,
+        canUndo: past.length > 0,
+        canRedo: future.length > 0,
       }}
     >
       {children}
@@ -104,7 +225,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;

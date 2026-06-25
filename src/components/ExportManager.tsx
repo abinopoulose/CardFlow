@@ -4,18 +4,135 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, type FieldConfig } from '../context/AppContext';
+
+const renderShapeExport = (field: FieldConfig, scale: number) => {
+  const fill = field.fillTransparent ? 'transparent' : (field.backgroundColor || '#e0e7ff');
+  const stroke = field.borderTransparent ? 'transparent' : (field.borderColor || '#4f46e5');
+  const strokeWidth = (field.borderWidth !== undefined ? field.borderWidth : 2) * scale;
+  const radius = (field.borderRadius || 0) * scale;
+
+  switch (field.shapeType) {
+    case 'circle':
+      return (
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <ellipse 
+            cx="50%" cy="50%" 
+            rx={`calc(50% - ${strokeWidth/2}px)`} 
+            ry={`calc(50% - ${strokeWidth/2}px)`} 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+          />
+        </svg>
+      );
+    case 'triangle':
+      return (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon 
+            points="50,2 98,98 2,98" 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      );
+    case 'star':
+      return (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon 
+            points="50,5 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      );
+    case 'hexagon':
+      return (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon 
+            points="50,5 95,27 95,73 50,95 5,73 5,27" 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      );
+    case 'pentagon':
+      return (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon 
+            points="50,5 95,38 78,95 22,95 5,38" 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      );
+    case 'diamond':
+      return (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon 
+            points="50,5 95,50 50,95 5,50" 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      );
+    case 'line':
+      return (
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <line 
+            x1="0" y1="50%" x2="100%" y2="50%" 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+          />
+        </svg>
+      );
+    case 'rectangle':
+    default:
+      return (
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect 
+            x={strokeWidth/2} 
+            y={strokeWidth/2} 
+            width={`calc(100% - ${strokeWidth}px)`} 
+            height={`calc(100% - ${strokeWidth}px)`} 
+            rx={radius} 
+            fill={fill} 
+            stroke={stroke} 
+            strokeWidth={strokeWidth} 
+          />
+        </svg>
+      );
+  }
+};
 
 const ExportManager: React.FC = () => {
-  const { data, templateImage, fields, isSingleMode, singleData, photosMap } = useAppContext();
+  const { currentProject } = useAppContext();
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const hiddenContainerRef = useRef<HTMLDivElement>(null);
 
+  if (!currentProject) return null;
+
+  const { data, templateImage, fields, isSingleMode, singleData, photosMap, width, height } = currentProject;
+
   const dataset = isSingleMode ? [singleData] : data;
 
-  if (!templateImage || dataset.length === 0 || fields.length === 0) {
-    return null;
+  if (dataset.length === 0 || fields.length === 0) {
+    return (
+      <div className="text-sm text-gray-500 text-center p-4">
+        Add fields and data to enable export.
+      </div>
+    );
   }
 
   const generateCanvasForRow = async (rowData: any): Promise<HTMLCanvasElement | null> => {
@@ -25,12 +142,28 @@ const ExportManager: React.FC = () => {
       const el = document.getElementById(`export-field-${field.id}`);
       if (el) {
         const rawVal = rowData[field.headerKey];
-        const val = field.type === 'image' && rawVal && photosMap[String(rawVal)] ? photosMap[String(rawVal)] : rawVal;
+        let val: any = rawVal;
+        if (field.type === 'image') {
+          if (field.isStatic) {
+            val = field.staticImage;
+          } else if (isSingleMode) {
+            val = singleData[field.headerKey];
+          } else {
+            const idNumber = row['id_number'];
+            if (idNumber && photosMap[field.headerKey]?.[String(idNumber)]) {
+              val = photosMap[field.headerKey][String(idNumber)];
+            }
+          }
+        }
 
         if (field.type === 'image' && val) {
           el.innerHTML = `<img src="${val}" style="width: 100%; height: 100%; object-fit: cover;" crossorigin="anonymous" />`;
-        } else {
-          el.innerText = val !== undefined && val !== null ? String(val) : '';
+        } else if (field.type === 'text') {
+          if (field.isStatic) {
+            el.innerText = field.staticText || '';
+          } else {
+            el.innerText = val !== undefined && val !== null ? String(val) : '';
+          }
         }
       }
     });
@@ -47,15 +180,15 @@ const ExportManager: React.FC = () => {
     return canvas;
   };
 
-  const exportAsSingleImage = async () => {
+  const exportAsSingleImage = async (format: 'jpeg' | 'png') => {
     setIsExporting(true);
     setProgress(50);
     try {
       const canvas = await generateCanvasForRow(dataset[0]);
       if (canvas) {
         canvas.toBlob((blob) => {
-          if (blob) saveAs(blob, 'id_card.jpg');
-        }, 'image/jpeg', 0.95);
+          if (blob) saveAs(blob, `id_card.${format}`);
+        }, `image/${format}`, 0.95);
       }
     } catch (e) {
       console.error(e);
@@ -137,22 +270,29 @@ const ExportManager: React.FC = () => {
       ) : (
         <div className="flex flex-col sm:flex-row gap-4">
           {isSingleMode ? (
-            <>
+            <div className="flex flex-col gap-2 w-full">
               <button
-                onClick={exportAsSingleImage}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-4 rounded-xl font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                onClick={() => exportAsSingleImage('jpeg')}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl font-medium transition-all shadow-md"
               >
-                <Image className="w-5 h-5" />
-                Download Image (JPG)
+                <Image className="w-4 h-4" />
+                Download JPG
+              </button>
+              <button
+                onClick={() => exportAsSingleImage('png')}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-medium transition-all shadow-md"
+              >
+                <Image className="w-4 h-4" />
+                Download PNG
               </button>
               <button
                 onClick={exportAsPDF}
-                className="flex-1 flex items-center justify-center gap-2 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-3 px-4 rounded-xl font-medium transition-all"
+                className="w-full flex items-center justify-center gap-2 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-2.5 px-4 rounded-xl font-medium transition-all"
               >
-                <FileDown className="w-5 h-5" />
+                <FileDown className="w-4 h-4" />
                 Download PDF
               </button>
-            </>
+            </div>
           ) : (
             <>
               <button
@@ -177,9 +317,27 @@ const ExportManager: React.FC = () => {
 
       {/* Hidden Container */}
       <div className="overflow-hidden h-0 w-0 absolute top-[-9999px] left-[-9999px]">
-        <div ref={hiddenContainerRef} className="relative bg-white" style={{ width: '800px' }}>
-          <img src={templateImage} alt="Template" className="w-full h-auto block" />
+        <div ref={hiddenContainerRef} className="relative bg-white" style={{ width: `${width * 2}px`, height: `${height * 2}px` }}>
+          {templateImage && <img src={templateImage} alt="Template" className="w-full h-full object-cover block absolute inset-0" crossOrigin="anonymous" />}
           {fields.map((field) => {
+            if (field.type === 'shape') {
+              return (
+                <div
+                  key={field.id}
+                  id={`export-field-${field.id}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${field.x * 2}px`, 
+                    top: `${field.y * 2}px`,
+                    width: `${(field.width || 100) * 2}px`,
+                    height: `${(field.height || 100) * 2}px`,
+                  }}
+                >
+                  {renderShapeExport(field, 2)}
+                </div>
+              );
+            }
+
             const isImage = field.type === 'image';
             return (
               <div
@@ -193,10 +351,11 @@ const ExportManager: React.FC = () => {
                     width: `${(field.width || 100) * 2}px`,
                     height: `${(field.height || 100) * 2}px`,
                   } : {
+                    fontFamily: field.fontFamily || 'sans-serif',
                     fontSize: `${field.fontSize * 2}px`,
                     color: field.color,
                     fontWeight: field.fontWeight,
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'pre-wrap',
                   })
                 }}
               />
