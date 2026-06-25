@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# CardFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+CardFlow is an intuitive, browser-based web application designed for generating bulk ID cards, badges, and passes.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+CardFlow streamlines the process of designing and generating ID cards for organizations, events, schools, and hospitals. It provides a visual drag-and-drop editor where you can build your template by adding text fields, images, dynamic photos, and a variety of vector shapes. Once the design is complete, you can import bulk data via CSV or Excel to automatically generate hundreds of unique cards at once.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Visual Editor:** Drag, drop, scale, and rotate text, images, and over 50 built-in vector shapes.
+- **Bulk Data Mapping:** Upload CSV or Excel files to map spreadsheet columns directly to text fields on your template.
+- **Dynamic Image Mapping:** Link image fields to local folders containing employee or attendee photos, automatically mapping them via unique ID numbers.
+- **Prebuilt Themes:** Start from scratch or use one of the several prebuilt themes (Corporate, Event Pass, Student ID, etc.).
+- **Export Options:** Export the final generated cards as a zipped archive of individual high-resolution images or as a multi-page PDF document.
+- **Single Manual Entry:** Toggle to manual mode to quickly generate a single ID card without uploading a spreadsheet.
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend:** React, TypeScript, Vite
+- **Styling:** Tailwind CSS
+- **Exporting Engine:** html2canvas, jsPDF, JSZip
+- **Data Parsing:** SheetJS (xlsx)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Local Development
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+To run the application locally:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+The application is automatically built and deployed to the `release` branch via GitHub Actions when code is pushed to `master`. The live site is hosted at `cardflow.abino.in`.

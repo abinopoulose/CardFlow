@@ -38,3 +38,4 @@ jobs:
           keep_files: false
           force_orphan: false
           commit_message: "Release Build: ${{ env.DATETIME }}"
+          cname: cardflow.abino.in
