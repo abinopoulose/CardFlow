@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { UploadCloud, FileText, User, Image as ImageIcon, ImagePlus, Type, Database, Plus } from 'lucide-react';
+import { UploadCloud, FileText, User, Image as ImageIcon, ImagePlus, Type, Database, Plus, Download } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import CropModal from './CropModal';
 
@@ -167,6 +167,19 @@ const DataUploader: React.FC = () => {
   const dynamicHeaders = Array.from(new Set([...headers, ...fields.filter(f => !f.isStatic).map(f => f.headerKey)]));
   const dynamicImageFields = fields.filter(f => f.type === 'image' && !f.isStatic);
 
+  const handleDownloadTemplate = () => {
+    const dynamicFieldKeys = fields.filter(f => !f.isStatic && f.type !== 'image').map(f => f.headerKey);
+    const templateHeaders = Array.from(new Set(['id_number', ...dynamicFieldKeys]));
+    
+    const ws = XLSX.utils.aoa_to_sheet([templateHeaders]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    
+    XLSX.writeFile(wb, "id_card_template.csv");
+  };
+
+  const hasDynamicFields = fields.some(f => !f.isStatic);
+
   return (
     <div className="flex flex-col gap-6 h-full">
       {cropTarget && (
@@ -226,6 +239,16 @@ const DataUploader: React.FC = () => {
                 ref={fileInputRef}
               />
             </div>
+
+            {hasDynamicFields && (
+              <button
+                onClick={handleDownloadTemplate}
+                className="w-full flex items-center justify-center gap-2 py-2 mt-1 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-200"
+              >
+                <Download className="w-4 h-4" />
+                Download CSV Template
+              </button>
+            )}
 
             {dynamicImageFields.length > 0 && (
               <div className="mt-2 flex flex-col gap-2">

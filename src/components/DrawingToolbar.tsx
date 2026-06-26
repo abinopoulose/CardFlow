@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PenTool, Eraser, Undo2, Redo2, Trash2, Check, X } from 'lucide-react';
 
 interface DrawingToolbarProps {

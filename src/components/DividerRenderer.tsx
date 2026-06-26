@@ -79,7 +79,7 @@ const DividerRenderer: React.FC<DividerRendererProps> = ({ field }) => {
         <defs>
           <linearGradient id={gradId} x1={gradX1} y1={gradY1} x2={gradX2} y2={gradY2}>
             {field.gradient.colors.map((c, i) => (
-              <stop key={i} offset={`${(i / (field.gradient.colors.length - 1)) * 100}%`} stopColor={c} />
+              <stop key={i} offset={`${(i / (field.gradient!.colors.length - 1)) * 100}%`} stopColor={c} />
             ))}
           </linearGradient>
         </defs>

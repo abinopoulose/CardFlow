@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Maximize2, X } from 'lucide-react';
-import { useAppContext, type FieldConfig } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import ShapeRenderer from './ShapeRenderer';
 import DividerRenderer from './DividerRenderer';
@@ -33,7 +33,7 @@ const Previewer: React.FC = () => {
   const previewDataset = dataset.slice(0, 100);
 
   return (
-    <div className="flex flex-col items-center w-full gap-6 overflow-y-auto max-h-[800px] p-2">
+    <div className="flex flex-col items-center w-full gap-6 p-2">
       {dataset.length > 100 && (
         <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg text-xs font-semibold w-full text-center shadow-sm">
           Previewing first 100 cards out of {dataset.length}

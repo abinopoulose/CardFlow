@@ -13,7 +13,7 @@ import { ReactSketchCanvas, type ReactSketchCanvasRef } from 'react-sketch-canva
 interface TemplateConfiguratorProps {
   selectedFieldIds: string[];
   setSelectedFieldIds: React.Dispatch<React.SetStateAction<string[]>>;
-  sketchRef?: React.RefObject<ReactSketchCanvasRef>;
+  sketchRef?: React.RefObject<ReactSketchCanvasRef | null>;
   drawingModeType?: 'select' | 'pen' | 'eraser';
   strokeColor?: string;
   strokeWidth?: number;
@@ -24,7 +24,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
   selectedFieldIds, setSelectedFieldIds, 
   sketchRef, drawingModeType, strokeColor, strokeWidth, eraserWidth 
 }) => {
-  const { currentProject, updateCurrentProject, undo, redo, canUndo, canRedo, isDrawingMode, setIsDrawingMode } = useAppContext();
+  const { currentProject, updateCurrentProject, undo, redo, canUndo, canRedo, isDrawingMode } = useAppContext();
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
 
   const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 });

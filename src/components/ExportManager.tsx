@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { useAppContext, type FieldConfig } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext';
 import ShapeRenderer from './ShapeRenderer';
 const ExportManager: React.FC = () => {
   const { currentProject } = useAppContext();

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ImagePlus, Trash2, Crop, Palette, Type, Droplet, Type as TypeIcon } from 'lucide-react';
+import { ImagePlus, Trash2, Crop } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import CropModal from './CropModal';
 

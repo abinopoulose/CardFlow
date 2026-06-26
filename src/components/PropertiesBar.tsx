@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Plus, BringToFront, SendToBack, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Plus } from 'lucide-react';
 import { useAppContext, type FieldConfig } from '../context/AppContext';
 import ShapeRenderer from './ShapeRenderer';
 import { CUSTOM_SHAPES, fontFamilies } from './FieldsPanel';

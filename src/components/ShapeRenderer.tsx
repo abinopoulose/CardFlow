@@ -15,9 +15,10 @@ const ShapeRenderer: React.FC<ShapeRendererProps> = ({ field, scale = 1, preview
   const stroke = field.borderTransparent ? 'transparent' : (field.borderColor || '#4f46e5');
   const strokeWidth = (field.borderWidth !== undefined ? field.borderWidth : 2) * scale;
   const radius = (field.borderRadius || 0) * scale;
+  const shapeType = field.shapeType || 'rectangle';
 
-  if (field.shapeType.startsWith('lucide-')) {
-    const iconName = field.shapeType.replace('lucide-', '');
+  if (shapeType.startsWith('lucide-')) {
+    const iconName = shapeType.replace('lucide-', '');
     const Icon = (LucideIcons as any)[iconName];
     if (Icon) {
       if (previewMode) {
@@ -32,7 +33,7 @@ const ShapeRenderer: React.FC<ShapeRendererProps> = ({ field, scale = 1, preview
   }
 
   // Predefined custom shapes
-  switch (field.shapeType) {
+  switch (shapeType) {
     case 'circle':
       return (
         <svg className={common} width="100%" height="100%" viewBox={previewMode ? "0 0 100 100" : undefined} xmlns="http://www.w3.org/2000/svg">

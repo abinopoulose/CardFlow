@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Trash2, Plus, Type, Image as ImageIcon, QrCode, Square, Minus, Palette, ImagePlus, Copy, ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight, FileText, Search, Bold, Italic, Underline, PenTool, Barcode } from 'lucide-react';
+import { Type, Image as ImageIcon, QrCode, Square, Minus, Palette, ImagePlus, PenTool, Barcode } from 'lucide-react';
 import { useAppContext, type FieldConfig } from '../context/AppContext';
 import CropModal from './CropModal';
 
@@ -7,8 +7,6 @@ interface FieldsPanelProps {
   selectedFieldId: string | null;
   onSelectField: (id: string | null) => void;
 }
-
-import ShapeRenderer from './ShapeRenderer';
 
 export const CUSTOM_SHAPES = [
   { value: 'rectangle', label: 'Rectangle' },
@@ -401,12 +399,11 @@ export const fontFamilies = [
   { name: 'Baskerville', value: 'Baskerville, serif' },
 ];
 
-const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectField }) => {
+const FieldsPanel: React.FC<FieldsPanelProps> = ({ onSelectField }) => {
   const { currentProject, updateCurrentProject, setIsDrawingMode } = useAppContext();
   const commonPhotoInputRef = useRef<HTMLInputElement>(null);
   
   const [cropTarget, setCropTarget] = useState<{ src: string; type: 'common' | 'update'; fieldId?: string } | null>(null);
-  const [shapeSearch, setShapeSearch] = useState('');
   const [showWordArtOptions, setShowWordArtOptions] = useState(false);
 
   const WORD_ART_PRESETS = [
@@ -536,20 +533,6 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
     reader.readAsDataURL(file);
     if (commonPhotoInputRef.current) commonPhotoInputRef.current.value = '';
   };
-
-  const handleUpdateStaticImageClick = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const result = evt.target?.result;
-      if (typeof result === 'string') {
-        setCropTarget({ src: result, type: 'update', fieldId: id });
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleCropComplete = (croppedBase64: string) => {
     if (!cropTarget) return;
 
@@ -564,13 +547,6 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
   const updateField = (id: string, updates: Partial<FieldConfig>) => {
     setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
   };
-
-  const removeField = (id: string) => {
-    setFields((prev) => prev.filter((f) => f.id !== id));
-    if (selectedFieldId === id) onSelectField(null);
-  };
-
-  const selectedField = fields.find((f) => f.id === selectedFieldId);
 
   return (
     <div className="flex flex-col gap-4 h-full">
