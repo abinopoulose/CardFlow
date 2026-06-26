@@ -32,7 +32,7 @@ const TemplateUploader: React.FC = () => {
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-sm border border-gray-100 mt-6">
+    <div className="flex flex-col gap-6 mt-6">
       {cropTarget && (
         <CropModal 
           imageSrc={cropTarget}
@@ -45,12 +45,12 @@ const TemplateUploader: React.FC = () => {
         />
       )}
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">Background Setup</h2>
-      </div>
-
-      <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm mb-6 flex flex-col gap-3">
-        <label className="text-sm font-medium text-gray-700">Canvas Size (px)</label>
+      {/* Canvas Dimensions Section */}
+      <div className="bg-white/80 backdrop-blur-xl p-5 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gray-900">Canvas Dimensions</h2>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex flex-col gap-3">
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="block text-xs text-gray-500 mb-1">Width</label>
@@ -72,8 +72,15 @@ const TemplateUploader: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
 
-      <div className="grid grid-cols-2 gap-2 bg-gray-100/80 p-1.5 rounded-xl mb-6 shadow-inner w-full">
+      {/* Background Design Section */}
+      <div className="bg-white/80 backdrop-blur-xl p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gray-900">Background Design</h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 bg-gray-100/80 p-1.5 rounded-xl mb-6 shadow-inner w-full">
         {['image', 'color', 'gradient', 'transparent'].map(type => (
           <button
             key={type}
@@ -251,6 +258,7 @@ const TemplateUploader: React.FC = () => {
           <p className="text-xs text-gray-400 mt-1">Background will be completely transparent.</p>
         </div>
       )}
+      </div>
     </div>
   );
 };

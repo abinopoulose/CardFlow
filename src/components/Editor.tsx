@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X, Layers, Database, Image as ImageIcon, LayoutTemplate } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X, Layers, Database, LayoutTemplate, Frame } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import DataUploader from './DataUploader';
 import TemplateUploader from './TemplateUploader';
@@ -293,8 +293,8 @@ const Editor: React.FC = () => {
               }}
               className={`flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all ${activeTab === 'background' && !isLeftCollapsed ? 'bg-gray-800 text-white shadow-inner' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}
             >
-              <ImageIcon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">Background</span>
+              <Frame className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Canvas</span>
             </button>
             <button 
               onClick={() => { 
