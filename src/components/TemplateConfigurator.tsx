@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Rnd } from 'react-rnd';
-import { Image as ImageIcon, ZoomIn, ZoomOut, Maximize, Undo2, Redo2, QrCode, Barcode as BarcodeIcon } from 'lucide-react';
+import { Image as ImageIcon, Undo2, Redo2, QrCode, Barcode as BarcodeIcon, Maximize } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import Barcode from 'react-barcode';
 import { useAppContext, type FieldConfig } from '../context/AppContext';
@@ -31,6 +31,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; width: number; height: number } | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [scale, setScale] = useState(1);
   const startPos = useRef<{ x: number, y: number } | null>(null);
 
   const fields = currentProject?.fields || [];
@@ -122,9 +123,27 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
         centerOnInit
         panning={{ activationKeys: [' '] }} // Hold space to pan
         wheel={{ disabled: true }}
+        pinch={{ disabled: true }}
+        onTransform={(ref) => setScale(ref.state.scale)}
+        onInit={(ref) => setScale(ref.state.scale)}
       >
-        {({ zoomIn, zoomOut, resetTransform, state }) => {
-          const currentScale = state?.scale || 1;
+        {({ resetTransform, setTransform, state }) => {
+          const currentScale = scale;
+          const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const zoomFactor = e.deltaY > 0 ? -0.1 : 0.1;
+            const currentScale = state.scale;
+            let newScale = currentScale + zoomFactor;
+            newScale = Math.max(0.1, Math.min(5, newScale));
+
+            const newPositionX = mouseX - ((mouseX - state.positionX) / currentScale) * newScale;
+            const newPositionY = mouseY - ((mouseY - state.positionY) / currentScale) * newScale;
+
+            setTransform(newPositionX, newPositionY, newScale);
+          };
           return (
           <>
             <div className="absolute top-4 left-4 z-50 flex gap-2 bg-white/90 backdrop-blur shadow-sm border border-gray-200 p-1.5 rounded-xl">
@@ -146,28 +165,28 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
               </button>
             </div>
 
-            <div className="absolute bottom-6 right-6 z-50 flex gap-2 bg-white/90 backdrop-blur shadow-lg border border-gray-200 p-2 rounded-xl">
-              <button 
-                onClick={() => zoomIn()} 
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors"
-                title="Zoom In"
-              >
-                <ZoomIn className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => zoomOut()} 
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors"
-                title="Zoom Out"
-              >
-                <ZoomOut className="w-5 h-5" />
-              </button>
-              <div className="w-px bg-gray-200 mx-1"></div>
+            <div className="absolute bottom-6 right-6 z-50 flex gap-3 bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full items-center">
+              <input 
+                type="range"
+                min="10"
+                max="500"
+                value={Math.round(scale * 100)}
+                onChange={(e) => {
+                   const newScale = parseFloat(e.target.value) / 100;
+                   setTransform(state.positionX, state.positionY, newScale);
+                }}
+                className="w-64 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+              <span className="text-xs font-bold text-gray-700 w-10 text-right">
+                {Math.round(scale * 100)}%
+              </span>
+              <div className="w-px h-5 bg-gray-200 mx-1"></div>
               <button 
                 onClick={() => resetTransform()} 
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors"
-                title="Reset Zoom"
+                className="p-1 hover:bg-gray-200 rounded-lg text-gray-500 transition-colors"
+                title="Fit to screen"
               >
-                <Maximize className="w-5 h-5" />
+                <Maximize className="w-4 h-4" />
               </button>
             </div>
             
@@ -177,7 +196,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
               </div>
             </div>
 
-            <div className="w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center">
+            <div className="w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center" onWheel={handleWheel}>
               <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                 <div className="flex items-center justify-center w-full h-full p-12">
                   <div 
@@ -311,7 +330,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                         }}
                       >
                         {field.type === 'shape' ? (
-                          <div className="w-full h-full pointer-events-none">
+                          <div className="w-full h-full pointer-events-none" style={{ opacity: field.opacity ?? 1 }}>
                             <ShapeRenderer field={field} />
                           </div>
                         ) : field.type === 'drawing' ? (
@@ -319,7 +338,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                             <img src={field.staticImage} className="w-full h-full" style={{ opacity: field.opacity ?? 1, objectFit: 'fill' }} alt="Drawing" />
                           </div>
                         ) : field.type === 'divider' ? (
-                          <div className="w-full h-full pointer-events-none flex items-center justify-center">
+                          <div className="w-full h-full pointer-events-none flex items-center justify-center" style={{ opacity: field.opacity ?? 1 }}>
                             <DividerRenderer field={field} />
                           </div>
                         ) : field.type === 'image' ? (

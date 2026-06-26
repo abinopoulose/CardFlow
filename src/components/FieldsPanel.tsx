@@ -619,7 +619,7 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ onSelectField }) => {
               onClick={() => setIsDrawingMode(true)}
               className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-lg transition-colors font-bold text-xs mb-3 shadow-sm"
             >
-              <PenTool className="w-4 h-4" /> DRAW (BETA)
+              <PenTool className="w-4 h-4" /> DRAW
             </button>
 
             <div className="grid grid-cols-2 gap-2">

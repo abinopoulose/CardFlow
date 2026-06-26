@@ -36,10 +36,32 @@ const Editor: React.FC = () => {
       try {
         const paths = await sketchRef.current.exportPaths();
         if (paths.length > 0) {
-          const dataUrl = await sketchRef.current.exportImage('png');
+          const svgStr = await sketchRef.current.exportSvg();
+          
+          const targetWidth = currentProject.width * 4;
+          const targetHeight = currentProject.height * 4;
+          
+          let modifiedSvgStr = svgStr;
+          if (!modifiedSvgStr.includes('viewBox=')) {
+            modifiedSvgStr = modifiedSvgStr.replace('<svg ', `<svg viewBox="0 0 ${currentProject.width} ${currentProject.height}" `);
+          }
+          if (modifiedSvgStr.includes('width=')) {
+            modifiedSvgStr = modifiedSvgStr.replace(/width="[^"]+"/, `width="${targetWidth}"`);
+          } else {
+            modifiedSvgStr = modifiedSvgStr.replace('<svg ', `<svg width="${targetWidth}" `);
+          }
+          if (modifiedSvgStr.includes('height=')) {
+            modifiedSvgStr = modifiedSvgStr.replace(/height="[^"]+"/, `height="${targetHeight}"`);
+          } else {
+            modifiedSvgStr = modifiedSvgStr.replace('<svg ', `<svg height="${targetHeight}" `);
+          }
+
+          const blob = new Blob([modifiedSvgStr], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
           const img = new Image();
-          img.src = dataUrl;
+          img.src = url;
           await new Promise((resolve) => { img.onload = resolve; });
+          URL.revokeObjectURL(url);
           
           const scale = img.width / currentProject.width;
           
@@ -369,12 +391,12 @@ const Editor: React.FC = () => {
             {/* Compute scale based on rightWidth (assume base width of preview is width of project, so scale down to fit container) */}
             <div className="w-full flex justify-center">
               <div 
-                className="transform origin-top transition-transform duration-75"
+                className="transition-all duration-75"
                 style={{
-                   transform: `scale(${Math.min(1, (rightWidth - 48) / (currentProject.width || 400))})`
+                   zoom: Math.min(1, (rightWidth - 48) / (currentProject.width || 400))
                 }}
               >
-                <Previewer />
+                <Previewer previewScale={Math.min(1, (rightWidth - 48) / (currentProject.width || 400))} />
               </div>
             </div>
           </div>

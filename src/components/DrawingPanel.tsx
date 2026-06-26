@@ -129,10 +129,10 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({
             onClick={onSave}
             className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm"
           >
-            <Check className="w-4 h-4" /> Exit Drawing Mode
+            <Check className="w-4 h-4" /> Save Drawing
           </button>
           <p className="text-[10px] text-gray-400 mt-2 text-center leading-tight">
-            Clicking Exit will finalize your drawing and return you to the fields panel. To move elements without exiting, switch to Select mode.
+            Clicking Save will finalize your drawing and return you to the fields panel. To move elements without saving, switch to Select mode.
           </p>
         </div>
       </div>

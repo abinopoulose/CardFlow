@@ -84,7 +84,7 @@ const PropertiesBar: React.FC<PropertiesBarProps> = ({ selectedFieldIds }) => {
     <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-md shadow-xl border border-gray-200 rounded-xl px-4 py-2 flex items-center gap-4 text-sm whitespace-nowrap">
       
       {/* Type / Data Key / Value */}
-      {selectedField.type !== 'shape' && (
+      {selectedField.type !== 'shape' && selectedField.type !== 'divider' && (
         <div className="flex items-center gap-2 border-r border-gray-200 pr-4">
           {selectedField.isStatic ? (
             selectedField.type === 'text' ? (
@@ -397,6 +397,17 @@ const PropertiesBar: React.FC<PropertiesBarProps> = ({ selectedFieldIds }) => {
               />
             </div>
           )}
+
+          <div className="flex items-center gap-1 ml-2">
+            <span className="text-[10px] text-gray-500 font-semibold">OPACITY</span>
+            <input 
+              type="range"
+              min="0" max="1" step="0.05"
+              value={selectedField.opacity ?? 1}
+              onChange={(e) => updateField(selectedField.id, { opacity: parseFloat(e.target.value) })}
+              className="w-20"
+            />
+          </div>
         </div>
       )}
 
@@ -404,7 +415,6 @@ const PropertiesBar: React.FC<PropertiesBarProps> = ({ selectedFieldIds }) => {
       {selectedField.type === 'divider' && (
         <div className="flex items-center gap-3 border-r border-gray-200 pr-4">
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-gray-500 font-semibold">STYLE</span>
             <select
               value={selectedField.lineStyle || 'solid'}
               onChange={(e) => {
@@ -565,6 +575,17 @@ const PropertiesBar: React.FC<PropertiesBarProps> = ({ selectedFieldIds }) => {
               value={selectedField.borderWidth !== undefined ? selectedField.borderWidth : 2} 
               onChange={(e) => updateField(selectedField.id, { borderWidth: Number(e.target.value) })}
               className="w-12 text-xs p-1 border border-gray-200 rounded outline-none text-center"
+            />
+          </div>
+
+          <div className="flex items-center gap-1 ml-2">
+            <span className="text-[10px] text-gray-500 font-semibold">OPACITY</span>
+            <input 
+              type="range"
+              min="0" max="1" step="0.05"
+              value={selectedField.opacity ?? 1}
+              onChange={(e) => updateField(selectedField.id, { opacity: parseFloat(e.target.value) })}
+              className="w-20"
             />
           </div>
         </div>
