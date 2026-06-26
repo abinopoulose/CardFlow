@@ -30,6 +30,7 @@ export interface FieldConfig {
   lineStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'wavy' | 'zigzag';
   gradient?: { colors: string[]; direction: string };
   opacity?: number;
+  isHidden?: boolean;
 }
 
 export interface Project {

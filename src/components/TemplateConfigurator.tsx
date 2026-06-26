@@ -26,6 +26,16 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
 }) => {
   const { currentProject, updateCurrentProject, undo, redo, canUndo, canRedo, isDrawingMode } = useAppContext();
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleHighlight = (e: CustomEvent) => {
+      setHighlightedFieldId(e.detail);
+      setTimeout(() => setHighlightedFieldId(null), 2000);
+    };
+    window.addEventListener('highlight-element', handleHighlight as EventListener);
+    return () => window.removeEventListener('highlight-element', handleHighlight as EventListener);
+  }, []);
 
   const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 });
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -317,7 +327,19 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                         disableDragging={editingTextId === field.id}
                         enableResizing={editingTextId !== field.id && (field.type === 'image' || field.type === 'shape' || field.type === 'qrcode' || field.type === 'barcode' || field.type === 'divider')}
                         lockAspectRatio={field.type === 'qrcode' || field.type === 'barcode'}
-                        className={`cursor-move absolute z-10 ${selectedFieldIds.includes(field.id) ? 'ring-2 ring-indigo-500' : 'hover:ring-1 hover:ring-indigo-300'}`}
+                        className={`cursor-move absolute z-10 ${
+                          highlightedFieldId === field.id 
+                            ? 'animate-pulse-gold rounded-sm' 
+                            : selectedFieldIds.includes(field.id) 
+                              ? 'ring-2 ring-indigo-500' 
+                              : 'hover:ring-1 hover:ring-indigo-300'
+                        }`}
+                        style={{
+                          ...(draggingId === field.id ? { opacity: 0.5 } : {}),
+                          zIndex: highlightedFieldId === field.id ? 999 : undefined,
+                          opacity: field.isHidden ? 0 : undefined,
+                          pointerEvents: field.isHidden ? 'none' : undefined,
+                        }}
                         onClick={(e: any) => {
                           e.stopPropagation();
                           if (e.shiftKey) {

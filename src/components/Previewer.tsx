@@ -85,6 +85,8 @@ const FullScreenViewer: React.FC<{
             />
           )}
           {fields.map((field: any) => {
+            if (field.isHidden) return null;
+
             const rawVal = data[field.headerKey];
             const isImage = field.type === 'image';
             const isShape = field.type === 'shape';
@@ -292,6 +294,8 @@ const Previewer: React.FC<{ previewScale?: number }> = ({ previewScale = 1 }) =>
               />
             )}
             {fields.map((field) => {
+              if (field.isHidden) return null;
+
               const rawVal = currentData[field.headerKey];
               const isImage = field.type === 'image';
               const isShape = field.type === 'shape';

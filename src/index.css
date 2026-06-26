@@ -5,3 +5,19 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
 }
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+    border-color: transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(250, 204, 21, 1), 0 0 20px 5px rgba(250, 204, 21, 0.6);
+    border-color: rgba(250, 204, 21, 1);
+  }
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 0.6s ease-in-out infinite;
+  z-index: 999;
+}

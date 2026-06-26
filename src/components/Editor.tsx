@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X, Layers, Database, Image as ImageIcon, LayoutTemplate } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import DataUploader from './DataUploader';
 import TemplateUploader from './TemplateUploader';
@@ -8,11 +8,12 @@ import FieldsPanel from './FieldsPanel';
 import Previewer from './Previewer';
 import ExportManager from './ExportManager';
 import DrawingPanel from './DrawingPanel';
+import LayersPanel from './LayersPanel';
 import type { ReactSketchCanvasRef } from 'react-sketch-canvas';
 
 const Editor: React.FC = () => {
   const { currentProject, setCurrentProjectId, updateCurrentProject, isDrawingMode, setIsDrawingMode } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'fields' | 'data' | 'background'>('fields');
+  const [activeTab, setActiveTab] = useState<'fields' | 'data' | 'background' | 'layers'>('fields');
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState(currentProject?.name || '');
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -260,66 +261,93 @@ const Editor: React.FC = () => {
         
         {/* Left Sidebar */}
         <div 
-          className={`bg-white flex flex-col shrink-0 z-10 shadow-[4px_0_15px_-10px_rgba(0,0,0,0.1)] relative transition-all duration-300 ease-in-out whitespace-nowrap ${isLeftCollapsed ? 'overflow-hidden border-r-0 opacity-0' : 'border-r border-gray-200'}`}
-          style={{ width: isLeftCollapsed ? 0 : `${leftWidth}px` }}
+          className={`bg-white flex shrink-0 z-10 shadow-[4px_0_15px_-10px_rgba(0,0,0,0.1)] relative transition-all duration-300 ease-in-out whitespace-nowrap ${isLeftCollapsed ? 'border-r-0' : 'border-r border-gray-200'}`}
+          style={{ width: isLeftCollapsed ? '72px' : `${leftWidth}px` }}
         >
-          <div className="flex p-2 gap-1 border-b border-gray-100 bg-gray-50/50 min-w-[380px]">
+          {/* Navigation Rail */}
+          <div className="w-[72px] shrink-0 bg-gray-900 text-white flex flex-col items-center py-4 gap-2 z-20 h-full">
             <button 
-              onClick={() => setActiveTab('fields')}
-              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${activeTab === 'fields' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              onClick={() => { 
+                if (activeTab === 'fields' && !isLeftCollapsed) setIsLeftCollapsed(true);
+                else { setActiveTab('fields'); setIsLeftCollapsed(false); }
+              }}
+              className={`flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all ${activeTab === 'fields' && !isLeftCollapsed ? 'bg-gray-800 text-white shadow-inner' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}
             >
-              Fields
+              <LayoutTemplate className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Design</span>
             </button>
             <button 
-              onClick={() => setActiveTab('data')}
-              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${activeTab === 'data' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              onClick={() => { 
+                if (activeTab === 'data' && !isLeftCollapsed) setIsLeftCollapsed(true);
+                else { setActiveTab('data'); setIsLeftCollapsed(false); }
+              }}
+              className={`flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all ${activeTab === 'data' && !isLeftCollapsed ? 'bg-gray-800 text-white shadow-inner' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}
             >
-              Data
+              <Database className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Data</span>
             </button>
             <button 
-              onClick={() => setActiveTab('background')}
-              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${activeTab === 'background' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              onClick={() => { 
+                if (activeTab === 'background' && !isLeftCollapsed) setIsLeftCollapsed(true);
+                else { setActiveTab('background'); setIsLeftCollapsed(false); }
+              }}
+              className={`flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all ${activeTab === 'background' && !isLeftCollapsed ? 'bg-gray-800 text-white shadow-inner' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}
             >
-              Background
+              <ImageIcon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Background</span>
+            </button>
+            <button 
+              onClick={() => { 
+                if (activeTab === 'layers' && !isLeftCollapsed) setIsLeftCollapsed(true);
+                else { setActiveTab('layers'); setIsLeftCollapsed(false); }
+              }}
+              className={`flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all ${activeTab === 'layers' && !isLeftCollapsed ? 'bg-gray-800 text-white shadow-inner' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}
+            >
+              <Layers className="w-5 h-5" />
+              <span className="text-[10px] font-medium">Layers</span>
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-gray-50/30 min-w-[380px]">
-            {isDrawingMode ? (
-              <DrawingPanel 
-                mode={drawingModeType}
-                setMode={(m) => {
-                  if (m === 'select') {
-                    handleSaveDrawing(false);
-                    setDrawingModeType('select');
-                  } else {
-                    setDrawingModeType(m);
-                  }
-                }}
-                strokeColor={strokeColor}
-                setStrokeColor={setStrokeColor}
-                strokeWidth={strokeWidth}
-                setStrokeWidth={setStrokeWidth}
-                eraserWidth={eraserWidth}
-                setEraserWidth={setEraserWidth}
-                onUndo={() => sketchRef.current?.undo()}
-                onRedo={() => sketchRef.current?.redo()}
-                onClear={() => sketchRef.current?.clearCanvas()}
-                onCancel={() => {
-                  setIsDrawingMode(false);
-                  sketchRef.current?.clearCanvas();
-                }}
-                onSave={() => {
-                  handleSaveDrawing(true);
-                }}
-              />
-            ) : (
-              <>
-                {activeTab === 'fields' && <FieldsPanel selectedFieldId={selectedFieldIds[0] || null} onSelectField={(id) => setSelectedFieldIds(id ? [id] : [])} />}
-                {activeTab === 'data' && <DataUploader />}
-                {activeTab === 'background' && <TemplateUploader />}
-              </>
-            )}
+          {/* Panel Content */}
+          <div className={`flex-1 flex flex-col h-full bg-white relative overflow-hidden transition-opacity duration-300 ${isLeftCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-gray-50/30 min-w-[308px]">
+              {isDrawingMode ? (
+                <DrawingPanel 
+                  mode={drawingModeType}
+                  setMode={(m) => {
+                    if (m === 'select') {
+                      handleSaveDrawing(false);
+                      setDrawingModeType('select');
+                    } else {
+                      setDrawingModeType(m);
+                    }
+                  }}
+                  strokeColor={strokeColor}
+                  setStrokeColor={setStrokeColor}
+                  strokeWidth={strokeWidth}
+                  setStrokeWidth={setStrokeWidth}
+                  eraserWidth={eraserWidth}
+                  setEraserWidth={setEraserWidth}
+                  onUndo={() => sketchRef.current?.undo()}
+                  onRedo={() => sketchRef.current?.redo()}
+                  onClear={() => sketchRef.current?.clearCanvas()}
+                  onCancel={() => {
+                    setIsDrawingMode(false);
+                    sketchRef.current?.clearCanvas();
+                  }}
+                  onSave={() => {
+                    handleSaveDrawing(true);
+                  }}
+                />
+              ) : (
+                <>
+                  {activeTab === 'fields' && <FieldsPanel selectedFieldId={selectedFieldIds[0] || null} onSelectField={(id) => setSelectedFieldIds(id ? [id] : [])} />}
+                  {activeTab === 'data' && <DataUploader />}
+                  {activeTab === 'background' && <TemplateUploader />}
+                  {activeTab === 'layers' && <LayersPanel />}
+                </>
+              )}
+            </div>
           </div>
 
           {/* Left Resize Handle */}
@@ -337,7 +365,7 @@ const Editor: React.FC = () => {
         <button
           onClick={() => setIsLeftCollapsed(!isLeftCollapsed)}
           className="absolute z-40 top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow-md rounded-r-lg p-1.5 hover:bg-gray-50 transition-all duration-300 ease-in-out cursor-pointer group"
-          style={{ left: isLeftCollapsed ? 0 : `${leftWidth}px` }}
+          style={{ left: isLeftCollapsed ? '72px' : `${leftWidth}px` }}
           title={isLeftCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isLeftCollapsed ? <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-indigo-600" /> : <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-indigo-600" />}
