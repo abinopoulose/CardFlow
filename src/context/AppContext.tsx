@@ -8,7 +8,7 @@ export interface FieldConfig {
   fontSize: number;
   color: string;
   fontWeight: string;
-  type?: 'text' | 'image' | 'shape';
+  type?: 'text' | 'image' | 'shape' | 'qrcode' | 'barcode' | 'divider' | 'drawing';
   shapeType?: string;
   backgroundColor?: string;
   fillTransparent?: boolean;
@@ -17,11 +17,19 @@ export interface FieldConfig {
   borderWidth?: number;
   borderRadius?: number;
   fontFamily?: string;
+  fontStyle?: string;
+  textDecoration?: string;
+  textTransform?: string;
+  textAlign?: 'left' | 'center' | 'right' | 'justify';
   width?: number;
   height?: number;
   isStatic?: boolean;
   staticImage?: string;
+  originalImage?: string;
   staticText?: string;
+  lineStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'wavy' | 'zigzag';
+  gradient?: { colors: string[]; direction: string };
+  opacity?: number;
 }
 
 export interface Project {
@@ -33,6 +41,10 @@ export interface Project {
   data: any[];
   headers: string[];
   templateImage: string | null;
+  originalTemplateImage?: string | null;
+  backgroundType?: 'image' | 'color' | 'gradient' | 'transparent';
+  backgroundColor?: string;
+  backgroundGradient?: { colors: string[]; direction: string };
   fields: FieldConfig[];
   isSingleMode: boolean;
   singleData: Record<string, any>;
@@ -46,7 +58,10 @@ interface AppState {
   createProject: (project: Omit<Project, 'id' | 'updatedAt'>) => string;
   updateCurrentProject: (updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
+  deleteAllProjects: () => void;
   currentProject: Project | null;
+  isDrawingMode: boolean;
+  setIsDrawingMode: (val: boolean) => void;
   
   // History
   undo: () => void;
@@ -62,6 +77,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(
     localStorage.getItem('idcardgen_current_project')
   );
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [past, setPast] = useState<Project[]>([]);
@@ -92,6 +108,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             data: parsed.data || [],
             headers: parsed.headers || [],
             templateImage: parsed.templateImage || null,
+            originalTemplateImage: parsed.originalTemplateImage || null,
+            backgroundType: parsed.backgroundType || 'image',
+            backgroundColor: parsed.backgroundColor || '#ffffff',
+            backgroundGradient: parsed.backgroundGradient || { colors: ['#ffffff', '#f3f4f6'], direction: 'to right' },
             fields: parsed.fields || [],
             isSingleMode: parsed.isSingleMode || false,
             singleData: parsed.singleData || {},
@@ -129,6 +149,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const createProject = (config: Omit<Project, 'id' | 'updatedAt'>) => {
     const newProject: Project = {
+      backgroundType: 'image',
+      backgroundColor: '#ffffff',
+      backgroundGradient: { colors: ['#ffffff', '#f3f4f6'], direction: 'to right' },
       ...config,
       id: Math.random().toString(36).substr(2, 9),
       updatedAt: Date.now(),
@@ -200,7 +223,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (currentProjectId === id) setCurrentProjectId(null);
   };
 
-  const currentProject = projects.find(p => p.id === currentProjectId) || null;
+  const deleteAllProjects = () => {
+    setProjects([]);
+    setCurrentProjectId(null);
+    localStorage.removeItem('idcardgen_projects');
+    localStorage.removeItem('idcardgen_state');
+  };
+
+  let currentProject = projects.find(p => p.id === currentProjectId) || null;
+  
+  if (currentProject) {
+    if (currentProject.backgroundGradient && !currentProject.backgroundGradient.colors) {
+      const bgG = currentProject.backgroundGradient as any;
+      currentProject = {
+        ...currentProject,
+        backgroundGradient: {
+          colors: [bgG.color1 || '#ffffff', bgG.color2 || '#f3f4f6'],
+          direction: bgG.direction || 'to right'
+        }
+      };
+    }
+  }
 
   return (
     <AppContext.Provider
@@ -211,7 +254,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         createProject,
         updateCurrentProject,
         deleteProject,
+        deleteAllProjects,
         currentProject,
+        isDrawingMode,
+        setIsDrawingMode,
         undo,
         redo,
         canUndo: past.length > 0,

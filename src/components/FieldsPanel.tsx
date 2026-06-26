@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Type, ImagePlus, Image as ImageIcon, Trash2, Square } from 'lucide-react';
+import { Trash2, Plus, Type, Image as ImageIcon, QrCode, Square, Minus, Palette, ImagePlus, Copy, ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight, FileText, Search, Bold, Italic, Underline, PenTool, Barcode } from 'lucide-react';
 import { useAppContext, type FieldConfig } from '../context/AppContext';
 import CropModal from './CropModal';
 
@@ -8,64 +8,308 @@ interface FieldsPanelProps {
   onSelectField: (id: string | null) => void;
 }
 
-const ShapePreview = ({ type }: { type: string }) => {
-  const common = "stroke-current text-gray-400 fill-gray-100 group-hover:text-indigo-500 group-hover:fill-indigo-50 transition-colors w-6 h-6 mx-auto mb-1";
-  switch (type) {
-    case 'rectangle': return <svg className={common} viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" rx="4" strokeWidth="6" /></svg>;
-    case 'circle': return <svg className={common} viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" strokeWidth="6" /></svg>;
-    case 'triangle': return <svg className={common} viewBox="0 0 100 100"><polygon points="50,15 90,85 10,85" strokeWidth="6" strokeLinejoin="round" /></svg>;
-    case 'star': return <svg className={common} viewBox="0 0 100 100"><polygon points="50,10 61,40 98,40 68,60 79,90 50,70 21,90 32,60 2,40 39,40" strokeWidth="4" strokeLinejoin="round" /></svg>;
-    case 'hexagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50,5 95,27 95,73 50,95 5,73 5,27" strokeWidth="6" strokeLinejoin="round" /></svg>;
-    case 'pentagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50,5 95,38 78,95 22,95 5,38" strokeWidth="6" strokeLinejoin="round" /></svg>;
-    case 'diamond': return <svg className={common} viewBox="0 0 100 100"><polygon points="50,5 95,50 50,95 5,50" strokeWidth="6" strokeLinejoin="round" /></svg>;
-    case 'line': return <svg className={common} viewBox="0 0 100 100"><line x1="10" y1="50" x2="90" y2="50" strokeWidth="8" strokeLinecap="round" /></svg>;
-    case 'ellipse': return <svg className={common} viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="40" ry="25" strokeWidth="6" /></svg>;
-    case 'cross': return <svg className={common} viewBox="0 0 100 100"><path d="M40 10 H60 V40 H90 V60 H60 V90 H40 V60 H10 V40 H40 Z" strokeWidth="4" /></svg>;
-    case 'heart': return <svg className={common} viewBox="0 0 100 100"><path d="M50 85 C50 85 10 55 10 30 C10 15 25 5 40 15 C50 25 50 25 50 25 C50 25 50 25 60 15 C75 5 90 15 90 30 C90 55 50 85 50 85 Z" strokeWidth="4" /></svg>;
-    case 'arrow-right': return <svg className={common} viewBox="0 0 100 100"><polygon points="20 40, 60 40, 60 20, 90 50, 60 80, 60 60, 20 60" strokeWidth="4" /></svg>;
-    case 'arrow-left': return <svg className={common} viewBox="0 0 100 100"><polygon points="80 40, 40 40, 40 20, 10 50, 40 80, 40 60, 80 60" strokeWidth="4" /></svg>;
-    case 'arrow-up': return <svg className={common} viewBox="0 0 100 100"><polygon points="40 80, 40 40, 20 40, 50 10, 80 40, 60 40, 60 80" strokeWidth="4" /></svg>;
-    case 'arrow-down': return <svg className={common} viewBox="0 0 100 100"><polygon points="40 20, 40 60, 20 60, 50 90, 80 60, 60 60, 60 20" strokeWidth="4" /></svg>;
-    case 'shield': return <svg className={common} viewBox="0 0 100 100"><path d="M10 20 L50 10 L90 20 V50 C90 75 50 90 50 90 C50 90 10 75 10 50 Z" strokeWidth="4" /></svg>;
-    case 'tag': return <svg className={common} viewBox="0 0 100 100"><polygon points="10 30, 30 10, 90 10, 90 90, 30 90, 10 70" strokeWidth="4" /></svg>;
-    case 'message': return <svg className={common} viewBox="0 0 100 100"><path d="M10 20 H90 V70 H30 L10 90 Z" strokeWidth="4" /></svg>;
-    case 'moon': return <svg className={common} viewBox="0 0 100 100"><path d="M60 10 C30 10 10 30 10 60 C10 80 25 90 40 90 C25 75 25 45 60 30 C75 25 90 35 90 35 C85 15 75 10 60 10 Z" strokeWidth="4" /></svg>;
-    case 'parallelogram': return <svg className={common} viewBox="0 0 100 100"><polygon points="20 80, 40 20, 90 20, 70 80" strokeWidth="4" /></svg>;
-    case 'trapezoid': return <svg className={common} viewBox="0 0 100 100"><polygon points="20 80, 30 20, 70 20, 80 80" strokeWidth="4" /></svg>;
-    case 'octagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="30 10, 70 10, 90 30, 90 70, 70 90, 30 90, 10 70, 10 30" strokeWidth="4" /></svg>;
-    case 'heptagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50 10, 85 25, 90 60, 65 90, 35 90, 10 60, 15 25" strokeWidth="4" /></svg>;
-    case 'nonagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50 10, 75 20, 90 45, 80 75, 55 90, 30 85, 10 60, 15 30, 35 10" strokeWidth="4" /></svg>;
-    case 'decagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50 10, 75 15, 90 35, 90 65, 75 85, 50 90, 25 85, 10 65, 10 35, 25 15" strokeWidth="4" /></svg>;
-    case 'dodecagon': return <svg className={common} viewBox="0 0 100 100"><polygon points="50 10, 70 15, 85 30, 90 50, 85 70, 70 85, 50 90, 30 85, 15 70, 10 50, 15 30, 30 15" strokeWidth="4" /></svg>;
-    case 'bookmark': return <svg className={common} viewBox="0 0 100 100"><polygon points="20 10, 80 10, 80 90, 50 70, 20 90" strokeWidth="4" /></svg>;
-    case 'flag': return <svg className={common} viewBox="0 0 100 100"><polygon points="20 10, 90 10, 70 30, 90 50, 20 50" strokeWidth="4" /></svg>;
-    case 'chevron-up': return <svg className={common} viewBox="0 0 100 100"><path d="M10 60 L50 20 L90 60" fill="none" strokeWidth="8" /></svg>;
-    case 'chevron-down': return <svg className={common} viewBox="0 0 100 100"><path d="M10 40 L50 80 L90 40" fill="none" strokeWidth="8" /></svg>;
-    case 'chevron-left': return <svg className={common} viewBox="0 0 100 100"><path d="M60 10 L20 50 L60 90" fill="none" strokeWidth="8" /></svg>;
-    case 'chevron-right': return <svg className={common} viewBox="0 0 100 100"><path d="M40 10 L80 50 L40 90" fill="none" strokeWidth="8" /></svg>;
-    case 'plus': return <svg className={common} viewBox="0 0 100 100"><path d="M20 50 H80 M50 20 V80" fill="none" strokeWidth="8" /></svg>;
-    case 'minus': return <svg className={common} viewBox="0 0 100 100"><path d="M20 50 H80" fill="none" strokeWidth="8" /></svg>;
-    case 'times': return <svg className={common} viewBox="0 0 100 100"><path d="M20 20 L80 80 M80 20 L20 80" fill="none" strokeWidth="8" /></svg>;
-    case 'divide': return <svg className={common} viewBox="0 0 100 100"><path d="M20 50 H80 M50 25 A 5 5 0 1 0 50 26 M50 75 A 5 5 0 1 0 50 76" fill="none" strokeWidth="8" strokeLinecap="round" /></svg>;
-    case 'equals': return <svg className={common} viewBox="0 0 100 100"><path d="M20 35 H80 M20 65 H80" fill="none" strokeWidth="8" /></svg>;
-    case 'home': return <svg className={common} viewBox="0 0 100 100"><path d="M10 50 L50 10 L90 50 V90 H10 Z" strokeWidth="4" /></svg>;
-    case 'mail': return <svg className={common} viewBox="0 0 100 100"><path d="M10 25 L50 55 L90 25 V75 H10 Z" strokeWidth="4" /></svg>;
-    case 'user': return <svg className={common} viewBox="0 0 100 100"><path d="M50 45 A 20 20 0 1 0 50 5 A 20 20 0 1 0 50 45 Z M10 95 C10 65 90 65 90 95" strokeWidth="4" /></svg>;
-    case 'lock': return <svg className={common} viewBox="0 0 100 100"><path d="M30 40 V25 A 20 20 0 0 1 70 25 V40 H80 V90 H20 V40 Z" strokeWidth="4" /></svg>;
-    case 'unlock': return <svg className={common} viewBox="0 0 100 100"><path d="M30 40 V25 A 20 20 0 0 1 70 25 V25 M70 40 H80 V90 H20 V40 Z" strokeWidth="4" /></svg>;
-    case 'search': return <svg className={common} viewBox="0 0 100 100"><path d="M40 60 A 20 20 0 1 0 40 20 A 20 20 0 1 0 40 60 Z M55 55 L85 85" fill="none" strokeWidth="8" /></svg>;
-    case 'bell': return <svg className={common} viewBox="0 0 100 100"><path d="M20 70 C20 70 30 60 30 40 C30 20 70 20 70 40 C70 60 80 70 80 70 H20 Z M40 70 A 10 10 0 0 0 60 70" strokeWidth="4" /></svg>;
-    case 'camera': return <svg className={common} viewBox="0 0 100 100"><path d="M20 30 L30 15 H70 L80 30 H90 V80 H10 V30 Z M50 70 A 15 15 0 1 0 50 40 A 15 15 0 1 0 50 70 Z" strokeWidth="4" /></svg>;
-    case 'cloud': return <svg className={common} viewBox="0 0 100 100"><path d="M25 60 A 15 15 0 0 1 25 30 C 25 15 55 15 60 25 A 20 20 0 0 1 80 55 A 15 15 0 0 1 70 80 H25 A 15 15 0 0 1 25 60 Z" strokeWidth="4" /></svg>;
-    case 'music': return <svg className={common} viewBox="0 0 100 100"><path d="M30 70 A 10 10 0 1 0 30 50 A 10 10 0 1 0 30 70 Z M70 60 A 10 10 0 1 0 70 40 A 10 10 0 1 0 70 60 Z M40 60 V10 L80 20 V50" fill="none" strokeWidth="6" /></svg>;
-    case 'sun': return <svg className={common} viewBox="0 0 100 100"><circle cx="50" cy="50" r="20" strokeWidth="4" /><path d="M50 10 V20 M50 80 V90 M10 50 H20 M80 50 H90 M22 22 L29 29 M71 71 L78 78 M22 78 L29 71 M71 29 L78 22" fill="none" strokeWidth="4" /></svg>;
-    case 'zap': return <svg className={common} viewBox="0 0 100 100"><polygon points="60 10, 20 50, 45 55, 40 90, 80 50, 55 45" strokeWidth="4" /></svg>;
-    case 'leaf': return <svg className={common} viewBox="0 0 100 100"><path d="M50 10 C 90 10 90 50 90 50 C 90 90 50 90 50 90 C 10 90 10 50 10 50 C 10 10 50 10 50 10 Z" strokeWidth="4" /></svg>;
-    default: return null;
-  }
-};
+import ShapeRenderer from './ShapeRenderer';
 
-const fontFamilies = [
+export const CUSTOM_SHAPES = [
+  { value: 'rectangle', label: 'Rectangle' },
+  { value: 'circle', label: 'Circle' },
+  { value: 'triangle', label: 'Triangle' },
+  { value: 'star', label: 'Star' },
+  { value: 'hexagon', label: 'Hexagon' },
+  { value: 'pentagon', label: 'Pentagon' },
+  { value: 'diamond', label: 'Diamond' },
+  { value: 'line', label: 'Line' },
+  { value: 'ellipse', label: 'Ellipse' },
+  { value: 'cross', label: 'Cross' },
+  { value: 'heart', label: 'Heart' },
+  { value: 'arrow-right', label: 'Arrow Right' },
+  { value: 'arrow-left', label: 'Arrow Left' },
+  { value: 'arrow-up', label: 'Arrow Up' },
+  { value: 'arrow-down', label: 'Arrow Down' },
+  { value: 'shield', label: 'Shield' },
+  { value: 'tag', label: 'Tag' },
+  { value: 'message', label: 'Message' },
+  { value: 'moon', label: 'Moon' },
+  { value: 'parallelogram', label: 'Parallelogram' },
+  { value: 'trapezoid', label: 'Trapezoid' },
+  { value: 'octagon', label: 'Octagon' },
+  { value: 'heptagon', label: 'Heptagon' },
+  { value: 'nonagon', label: 'Nonagon' },
+  { value: 'decagon', label: 'Decagon' },
+  { value: 'dodecagon', label: 'Dodecagon' },
+  { value: 'bookmark', label: 'Bookmark' },
+  { value: 'flag', label: 'Flag' },
+  { value: 'chevron-up', label: 'Chevron Up' },
+  { value: 'chevron-down', label: 'Chevron Down' },
+  { value: 'chevron-left', label: 'Chevron Left' },
+  { value: 'chevron-right', label: 'Chevron Right' },
+  { value: 'plus', label: 'Plus' },
+  { value: 'minus', label: 'Minus' },
+  { value: 'times', label: 'Times' },
+  { value: 'divide', label: 'Divide' },
+  { value: 'equals', label: 'Equals' },
+  { value: 'home', label: 'Home' },
+  { value: 'mail', label: 'Mail' },
+  { value: 'user', label: 'User' },
+  { value: 'lock', label: 'Lock' },
+  { value: 'unlock', label: 'Unlock' },
+  { value: 'search', label: 'Search' },
+  { value: 'bell', label: 'Bell' },
+  { value: 'camera', label: 'Camera' },
+  { value: 'cloud', label: 'Cloud' },
+  { value: 'music', label: 'Music' },
+  { value: 'sun', label: 'Sun' },
+  { value: 'zap', label: 'Zap' },
+  { value: 'leaf', label: 'Leaf' },
+  // 200+ Lucide Shapes
+  { value: 'lucide-Activity', label: 'Activity' },
+  { value: 'lucide-Airplane', label: 'Airplane' },
+  { value: 'lucide-AlarmClock', label: 'Alarm Clock' },
+  { value: 'lucide-AlertCircle', label: 'Alert Circle' },
+  { value: 'lucide-AlertTriangle', label: 'Alert Triangle' },
+  { value: 'lucide-AlignCenter', label: 'Align Center' },
+  { value: 'lucide-AlignJustify', label: 'Align Justify' },
+  { value: 'lucide-AlignLeft', label: 'Align Left' },
+  { value: 'lucide-AlignRight', label: 'Align Right' },
+  { value: 'lucide-Anchor', label: 'Anchor' },
+  { value: 'lucide-Aperture', label: 'Aperture' },
+  { value: 'lucide-Archive', label: 'Archive' },
+  { value: 'lucide-ArrowDown', label: 'Arrow Down' },
+  { value: 'lucide-ArrowDownCircle', label: 'Arrow Down Circle' },
+  { value: 'lucide-ArrowLeft', label: 'Arrow Left' },
+  { value: 'lucide-ArrowLeftCircle', label: 'Arrow Left Circle' },
+  { value: 'lucide-ArrowRight', label: 'Arrow Right' },
+  { value: 'lucide-ArrowRightCircle', label: 'Arrow Right Circle' },
+  { value: 'lucide-ArrowUp', label: 'Arrow Up' },
+  { value: 'lucide-ArrowUpCircle', label: 'Arrow Up Circle' },
+  { value: 'lucide-AtSign', label: 'At Sign' },
+  { value: 'lucide-Award', label: 'Award' },
+  { value: 'lucide-Banknote', label: 'Banknote' },
+  { value: 'lucide-BarChart', label: 'Bar Chart' },
+  { value: 'lucide-BarChart2', label: 'Bar Chart 2' },
+  { value: 'lucide-Battery', label: 'Battery' },
+  { value: 'lucide-BatteryCharging', label: 'Battery Charging' },
+  { value: 'lucide-Bell', label: 'Bell' },
+  { value: 'lucide-BellOff', label: 'Bell Off' },
+  { value: 'lucide-Bluetooth', label: 'Bluetooth' },
+  { value: 'lucide-Book', label: 'Book' },
+  { value: 'lucide-BookOpen', label: 'Book Open' },
+  { value: 'lucide-Bookmark', label: 'Bookmark' },
+  { value: 'lucide-Box', label: 'Box' },
+  { value: 'lucide-Briefcase', label: 'Briefcase' },
+  { value: 'lucide-Building', label: 'Building' },
+  { value: 'lucide-Calculator', label: 'Calculator' },
+  { value: 'lucide-Calendar', label: 'Calendar' },
+  { value: 'lucide-Camera', label: 'Camera' },
+  { value: 'lucide-CameraOff', label: 'Camera Off' },
+  { value: 'lucide-Car', label: 'Car' },
+  { value: 'lucide-Cast', label: 'Cast' },
+  { value: 'lucide-Check', label: 'Check' },
+  { value: 'lucide-CheckCircle', label: 'Check Circle' },
+  { value: 'lucide-CheckSquare', label: 'Check Square' },
+  { value: 'lucide-ChevronDown', label: 'Chevron Down' },
+  { value: 'lucide-ChevronLeft', label: 'Chevron Left' },
+  { value: 'lucide-ChevronRight', label: 'Chevron Right' },
+  { value: 'lucide-ChevronUp', label: 'Chevron Up' },
+  { value: 'lucide-ChevronsDown', label: 'Chevrons Down' },
+  { value: 'lucide-ChevronsLeft', label: 'Chevrons Left' },
+  { value: 'lucide-ChevronsRight', label: 'Chevrons Right' },
+  { value: 'lucide-ChevronsUp', label: 'Chevrons Up' },
+  { value: 'lucide-Circle', label: 'Circle' },
+  { value: 'lucide-Clipboard', label: 'Clipboard' },
+  { value: 'lucide-Clock', label: 'Clock' },
+  { value: 'lucide-Cloud', label: 'Cloud' },
+  { value: 'lucide-CloudDrizzle', label: 'Cloud Drizzle' },
+  { value: 'lucide-CloudLightning', label: 'Cloud Lightning' },
+  { value: 'lucide-CloudRain', label: 'Cloud Rain' },
+  { value: 'lucide-CloudSnow', label: 'Cloud Snow' },
+  { value: 'lucide-Code', label: 'Code' },
+  { value: 'lucide-Coffee', label: 'Coffee' },
+  { value: 'lucide-Columns', label: 'Columns' },
+  { value: 'lucide-Command', label: 'Command' },
+  { value: 'lucide-Compass', label: 'Compass' },
+  { value: 'lucide-Copy', label: 'Copy' },
+  { value: 'lucide-Cpu', label: 'Cpu' },
+  { value: 'lucide-CreditCard', label: 'Credit Card' },
+  { value: 'lucide-Crop', label: 'Crop' },
+  { value: 'lucide-Crosshair', label: 'Crosshair' },
+  { value: 'lucide-Database', label: 'Database' },
+  { value: 'lucide-Delete', label: 'Delete' },
+  { value: 'lucide-Disc', label: 'Disc' },
+  { value: 'lucide-DollarSign', label: 'Dollar Sign' },
+  { value: 'lucide-Download', label: 'Download' },
+  { value: 'lucide-DownloadCloud', label: 'Download Cloud' },
+  { value: 'lucide-Droplet', label: 'Droplet' },
+  { value: 'lucide-Edit', label: 'Edit' },
+  { value: 'lucide-Edit2', label: 'Edit 2' },
+  { value: 'lucide-Edit3', label: 'Edit 3' },
+  { value: 'lucide-Eye', label: 'Eye' },
+  { value: 'lucide-EyeOff', label: 'Eye Off' },
+  { value: 'lucide-FastForward', label: 'Fast Forward' },
+  { value: 'lucide-Feather', label: 'Feather' },
+  { value: 'lucide-File', label: 'File' },
+  { value: 'lucide-FileMinus', label: 'File Minus' },
+  { value: 'lucide-FilePlus', label: 'File Plus' },
+  { value: 'lucide-FileText', label: 'File Text' },
+  { value: 'lucide-Film', label: 'Film' },
+  { value: 'lucide-Filter', label: 'Filter' },
+  { value: 'lucide-Flag', label: 'Flag' },
+  { value: 'lucide-Flame', label: 'Flame' },
+  { value: 'lucide-Folder', label: 'Folder' },
+  { value: 'lucide-FolderMinus', label: 'Folder Minus' },
+  { value: 'lucide-FolderPlus', label: 'Folder Plus' },
+  { value: 'lucide-Frown', label: 'Frown' },
+  { value: 'lucide-Gift', label: 'Gift' },
+  { value: 'lucide-Globe', label: 'Globe' },
+  { value: 'lucide-Grid', label: 'Grid' },
+  { value: 'lucide-HardDrive', label: 'Hard Drive' },
+  { value: 'lucide-Hash', label: 'Hash' },
+  { value: 'lucide-Headphones', label: 'Headphones' },
+  { value: 'lucide-Heart', label: 'Heart' },
+  { value: 'lucide-HelpCircle', label: 'Help Circle' },
+  { value: 'lucide-Hexagon', label: 'Hexagon' },
+  { value: 'lucide-Home', label: 'Home' },
+  { value: 'lucide-Image', label: 'Image' },
+  { value: 'lucide-Inbox', label: 'Inbox' },
+  { value: 'lucide-Info', label: 'Info' },
+  { value: 'lucide-Key', label: 'Key' },
+  { value: 'lucide-Layers', label: 'Layers' },
+  { value: 'lucide-Layout', label: 'Layout' },
+  { value: 'lucide-LifeBuoy', label: 'Life Buoy' },
+  { value: 'lucide-Link', label: 'Link' },
+  { value: 'lucide-Link2', label: 'Link 2' },
+  { value: 'lucide-List', label: 'List' },
+  { value: 'lucide-Loader', label: 'Loader' },
+  { value: 'lucide-Lock', label: 'Lock' },
+  { value: 'lucide-LogIn', label: 'Log In' },
+  { value: 'lucide-LogOut', label: 'Log Out' },
+  { value: 'lucide-Mail', label: 'Mail' },
+  { value: 'lucide-Map', label: 'Map' },
+  { value: 'lucide-MapPin', label: 'Map Pin' },
+  { value: 'lucide-Maximize', label: 'Maximize' },
+  { value: 'lucide-Maximize2', label: 'Maximize 2' },
+  { value: 'lucide-Meh', label: 'Meh' },
+  { value: 'lucide-Menu', label: 'Menu' },
+  { value: 'lucide-MessageCircle', label: 'Message Circle' },
+  { value: 'lucide-MessageSquare', label: 'Message Square' },
+  { value: 'lucide-Mic', label: 'Mic' },
+  { value: 'lucide-MicOff', label: 'Mic Off' },
+  { value: 'lucide-Minimize', label: 'Minimize' },
+  { value: 'lucide-Minimize2', label: 'Minimize 2' },
+  { value: 'lucide-Minus', label: 'Minus' },
+  { value: 'lucide-MinusCircle', label: 'Minus Circle' },
+  { value: 'lucide-MinusSquare', label: 'Minus Square' },
+  { value: 'lucide-Monitor', label: 'Monitor' },
+  { value: 'lucide-Moon', label: 'Moon' },
+  { value: 'lucide-MoreHorizontal', label: 'More Horizontal' },
+  { value: 'lucide-MoreVertical', label: 'More Vertical' },
+  { value: 'lucide-MousePointer', label: 'Mouse Pointer' },
+  { value: 'lucide-Move', label: 'Move' },
+  { value: 'lucide-Music', label: 'Music' },
+  { value: 'lucide-Navigation', label: 'Navigation' },
+  { value: 'lucide-Navigation2', label: 'Navigation 2' },
+  { value: 'lucide-Octagon', label: 'Octagon' },
+  { value: 'lucide-Package', label: 'Package' },
+  { value: 'lucide-Paperclip', label: 'Paperclip' },
+  { value: 'lucide-Pause', label: 'Pause' },
+  { value: 'lucide-PauseCircle', label: 'Pause Circle' },
+  { value: 'lucide-PenTool', label: 'Pen Tool' },
+  { value: 'lucide-Percent', label: 'Percent' },
+  { value: 'lucide-Phone', label: 'Phone' },
+  { value: 'lucide-PhoneCall', label: 'Phone Call' },
+  { value: 'lucide-PhoneForwarded', label: 'Phone Forwarded' },
+  { value: 'lucide-PhoneIncoming', label: 'Phone Incoming' },
+  { value: 'lucide-PhoneMissed', label: 'Phone Missed' },
+  { value: 'lucide-PhoneOff', label: 'Phone Off' },
+  { value: 'lucide-PhoneOutgoing', label: 'Phone Outgoing' },
+  { value: 'lucide-PieChart', label: 'Pie Chart' },
+  { value: 'lucide-Play', label: 'Play' },
+  { value: 'lucide-PlayCircle', label: 'Play Circle' },
+  { value: 'lucide-Plus', label: 'Plus' },
+  { value: 'lucide-PlusCircle', label: 'Plus Circle' },
+  { value: 'lucide-PlusSquare', label: 'Plus Square' },
+  { value: 'lucide-Pocket', label: 'Pocket' },
+  { value: 'lucide-Power', label: 'Power' },
+  { value: 'lucide-Printer', label: 'Printer' },
+  { value: 'lucide-Radio', label: 'Radio' },
+  { value: 'lucide-RefreshCcw', label: 'Refresh Ccw' },
+  { value: 'lucide-RefreshCw', label: 'Refresh Cw' },
+  { value: 'lucide-Repeat', label: 'Repeat' },
+  { value: 'lucide-Rewind', label: 'Rewind' },
+  { value: 'lucide-RotateCcw', label: 'Rotate Ccw' },
+  { value: 'lucide-RotateCw', label: 'Rotate Cw' },
+  { value: 'lucide-Save', label: 'Save' },
+  { value: 'lucide-Scissors', label: 'Scissors' },
+  { value: 'lucide-Search', label: 'Search' },
+  { value: 'lucide-Send', label: 'Send' },
+  { value: 'lucide-Server', label: 'Server' },
+  { value: 'lucide-Settings', label: 'Settings' },
+  { value: 'lucide-Share', label: 'Share' },
+  { value: 'lucide-Share2', label: 'Share 2' },
+  { value: 'lucide-Shield', label: 'Shield' },
+  { value: 'lucide-ShieldOff', label: 'Shield Off' },
+  { value: 'lucide-ShoppingBag', label: 'Shopping Bag' },
+  { value: 'lucide-ShoppingCart', label: 'Shopping Cart' },
+  { value: 'lucide-Shuffle', label: 'Shuffle' },
+  { value: 'lucide-Sidebar', label: 'Sidebar' },
+  { value: 'lucide-SkipBack', label: 'Skip Back' },
+  { value: 'lucide-SkipForward', label: 'Skip Forward' },
+  { value: 'lucide-Sliders', label: 'Sliders' },
+  { value: 'lucide-Smartphone', label: 'Smartphone' },
+  { value: 'lucide-Smile', label: 'Smile' },
+  { value: 'lucide-Speaker', label: 'Speaker' },
+  { value: 'lucide-Square', label: 'Square' },
+  { value: 'lucide-Star', label: 'Star' },
+  { value: 'lucide-StopCircle', label: 'Stop Circle' },
+  { value: 'lucide-Sun', label: 'Sun' },
+  { value: 'lucide-Sunrise', label: 'Sunrise' },
+  { value: 'lucide-Sunset', label: 'Sunset' },
+  { value: 'lucide-Tablet', label: 'Tablet' },
+  { value: 'lucide-Tag', label: 'Tag' },
+  { value: 'lucide-Target', label: 'Target' },
+  { value: 'lucide-Terminal', label: 'Terminal' },
+  { value: 'lucide-Thermometer', label: 'Thermometer' },
+  { value: 'lucide-ThumbsDown', label: 'Thumbs Down' },
+  { value: 'lucide-ThumbsUp', label: 'Thumbs Up' },
+  { value: 'lucide-ToggleLeft', label: 'Toggle Left' },
+  { value: 'lucide-ToggleRight', label: 'Toggle Right' },
+  { value: 'lucide-Tool', label: 'Tool' },
+  { value: 'lucide-Trash', label: 'Trash' },
+  { value: 'lucide-Trash2', label: 'Trash 2' },
+  { value: 'lucide-TrendingDown', label: 'Trending Down' },
+  { value: 'lucide-TrendingUp', label: 'Trending Up' },
+  { value: 'lucide-Triangle', label: 'Triangle' },
+  { value: 'lucide-Truck', label: 'Truck' },
+  { value: 'lucide-Tv', label: 'Tv' },
+  { value: 'lucide-Type', label: 'Type' },
+  { value: 'lucide-Umbrella', label: 'Umbrella' },
+  { value: 'lucide-Unlock', label: 'Unlock' },
+  { value: 'lucide-Upload', label: 'Upload' },
+  { value: 'lucide-UploadCloud', label: 'Upload Cloud' },
+  { value: 'lucide-User', label: 'User' },
+  { value: 'lucide-UserCheck', label: 'User Check' },
+  { value: 'lucide-UserMinus', label: 'User Minus' },
+  { value: 'lucide-UserPlus', label: 'User Plus' },
+  { value: 'lucide-Users', label: 'Users' },
+  { value: 'lucide-Video', label: 'Video' },
+  { value: 'lucide-VideoOff', label: 'Video Off' },
+  { value: 'lucide-Voicemail', label: 'Voicemail' },
+  { value: 'lucide-Volume', label: 'Volume' },
+  { value: 'lucide-Volume1', label: 'Volume 1' },
+  { value: 'lucide-Volume2', label: 'Volume 2' },
+  { value: 'lucide-VolumeX', label: 'Volume X' },
+  { value: 'lucide-Watch', label: 'Watch' },
+  { value: 'lucide-Wifi', label: 'Wifi' },
+  { value: 'lucide-WifiOff', label: 'Wifi Off' },
+  { value: 'lucide-Wind', label: 'Wind' },
+  { value: 'lucide-X', label: 'X' },
+  { value: 'lucide-XCircle', label: 'X Circle' },
+  { value: 'lucide-XSquare', label: 'X Square' },
+  { value: 'lucide-ZoomIn', label: 'Zoom In' },
+  { value: 'lucide-ZoomOut', label: 'Zoom Out' }
+];
+
+export const fontFamilies = [
   { name: 'Default Sans', value: 'sans-serif' },
   { name: 'Arial', value: 'Arial, sans-serif' },
   { name: 'Courier New', value: '"Courier New", monospace' },
@@ -158,10 +402,21 @@ const fontFamilies = [
 ];
 
 const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectField }) => {
-  const { currentProject, updateCurrentProject } = useAppContext();
+  const { currentProject, updateCurrentProject, setIsDrawingMode } = useAppContext();
   const commonPhotoInputRef = useRef<HTMLInputElement>(null);
   
   const [cropTarget, setCropTarget] = useState<{ src: string; type: 'common' | 'update'; fieldId?: string } | null>(null);
+  const [shapeSearch, setShapeSearch] = useState('');
+  const [showWordArtOptions, setShowWordArtOptions] = useState(false);
+
+  const WORD_ART_PRESETS = [
+    { label: 'Classic Elegance', fontFamily: '"Playfair Display", serif', fontSize: 32, color: '#b8860b', fontWeight: 'bold', fontStyle: 'italic' },
+    { label: 'Impactful', fontFamily: 'Impact, sans-serif', fontSize: 40, color: '#dc2626', textTransform: 'uppercase' },
+    { label: 'Beautiful Script', fontFamily: '"Pacifico", cursive', fontSize: 32, color: '#ec4899' },
+    { label: 'Typewriter', fontFamily: '"Courier New", monospace', fontSize: 24, color: '#1f2937', fontWeight: 'bold' },
+    { label: 'Playful', fontFamily: '"Comic Sans MS", cursive', fontSize: 28, color: '#8b5cf6' },
+    { label: 'Tech Glitch', fontFamily: '"Roboto Mono", monospace', fontSize: 30, color: '#0ea5e9', fontWeight: 'bold', textTransform: 'uppercase' },
+  ];
 
   if (!currentProject) return null;
 
@@ -179,7 +434,7 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
     updateCurrentProject({ headers: newHeaders });
   };
 
-  const handleAddField = (headerKey: string, type: 'text' | 'image' | 'shape' = 'text', isStatic = false, extras?: Partial<FieldConfig>) => {
+  const handleAddField = (headerKey: string, type: FieldConfig['type'] = 'text', isStatic = false, extras?: Partial<FieldConfig>) => {
     const newField: FieldConfig = {
       id: Math.random().toString(36).substr(2, 9),
       headerKey,
@@ -190,8 +445,8 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
       fontWeight: 'normal',
       fontFamily: 'sans-serif',
       type,
-      width: type === 'image' || type === 'shape' ? 100 : undefined,
-      height: type === 'image' || type === 'shape' ? 100 : undefined,
+      width: type === 'image' || type === 'shape' || type === 'qrcode' ? 100 : (type === 'barcode' ? 150 : undefined),
+      height: type === 'image' || type === 'shape' || type === 'qrcode' ? 100 : (type === 'barcode' ? 50 : undefined),
       isStatic,
       ...extras
     };
@@ -199,9 +454,17 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
     onSelectField(newField.id);
   };
 
+  const checkKeyUnique = (name: string) => {
+    return !fields.some(f => !f.isStatic && f.headerKey.toLowerCase() === name.toLowerCase());
+  };
+
   const handleAddDynamicPhoto = () => {
     const name = window.prompt('Enter Data Key for this photo:', 'Photo');
     if (!name) return;
+    if (!checkKeyUnique(name)) {
+      window.alert(`The key "${name}" is already in use. Please use a unique key.`);
+      return;
+    }
     if (!headers.includes(name)) {
       setHeaders([...headers, name]);
     }
@@ -211,10 +474,40 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
   const handleAddDynamicText = () => {
     const name = window.prompt('Enter Data Key for this text field:', 'Name');
     if (!name) return;
+    if (!checkKeyUnique(name)) {
+      window.alert(`The key "${name}" is already in use. Please use a unique key.`);
+      return;
+    }
     if (!headers.includes(name)) {
       setHeaders([...headers, name]);
     }
     handleAddField(name, 'text', false);
+  };
+
+  const handleAddDynamicQR = () => {
+    const name = window.prompt('Enter Data Key for this QR Code:', 'ID_Number');
+    if (!name) return;
+    if (!checkKeyUnique(name)) {
+      window.alert(`The key "${name}" is already in use. Please use a unique key.`);
+      return;
+    }
+    if (!headers.includes(name)) {
+      setHeaders([...headers, name]);
+    }
+    handleAddField(name, 'qrcode', false);
+  };
+
+  const handleAddDynamicBarcode = () => {
+    const name = window.prompt('Enter Data Key for this Barcode:', 'ID_Number');
+    if (!name) return;
+    if (!checkKeyUnique(name)) {
+      window.alert(`The key "${name}" is already in use. Please use a unique key.`);
+      return;
+    }
+    if (!headers.includes(name)) {
+      setHeaders([...headers, name]);
+    }
+    handleAddField(name, 'barcode', false);
   };
 
   const handleAddShape = () => {
@@ -290,41 +583,172 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
       )}
 
       {/* Add Data Fields */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm shrink-0">
-        <h3 className="text-sm font-bold text-gray-800 mb-3">Add Fields</h3>
+      <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm shrink-0">
+        <h3 className="text-base font-bold text-gray-900 mb-4">Add Elements</h3>
         
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <button
-            onClick={handleAddDynamicText}
-            className="w-full flex items-center justify-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs px-2 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-semibold"
-          >
-            <Type className="w-3.5 h-3.5" />
-            Data Text (Variable)
-          </button>
-          
-          <button
-            onClick={handleAddDynamicPhoto}
-            className="w-full flex items-center justify-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs px-2 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-semibold"
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            Data Image (Variable)
-          </button>
+        <div className="space-y-5">
+          {/* Dynamic Data Group */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">Dynamic Data (Variables)</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleAddDynamicText}
+                className="flex flex-col items-center justify-center gap-1.5 bg-indigo-50/50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 p-3 rounded-lg transition-all group"
+              >
+                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Type className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-semibold">Text Field</span>
+              </button>
+              
+              <button
+                onClick={handleAddDynamicPhoto}
+                className="flex flex-col items-center justify-center gap-1.5 bg-indigo-50/50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 p-3 rounded-lg transition-all group"
+              >
+                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-md group-hover:scale-110 transition-transform">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-semibold">Image Field</span>
+              </button>
+              <button
+                onClick={handleAddDynamicQR}
+                className="flex flex-col items-center justify-center gap-1.5 bg-indigo-50/50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 p-3 rounded-lg transition-all group"
+              >
+                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-md group-hover:scale-110 transition-transform">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-semibold">QR Code</span>
+              </button>
+              
+              <button
+                onClick={handleAddDynamicBarcode}
+                className="flex flex-col items-center justify-center gap-1.5 bg-indigo-50/50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 p-3 rounded-lg transition-all group"
+              >
+                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Barcode className="w-4 h-4" />
+                </div>
+                <span className="text-[11px] font-semibold">Barcode</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1.5 px-1 leading-tight whitespace-normal break-words">These fields change value per card based on your uploaded dataset.</p>
+          </div>
 
-          <button
-            onClick={() => handleAddField(`StaticText_${Math.floor(Math.random()*1000)}`, 'text', true, { staticText: 'Double click to edit' })}
-            className="w-full flex items-center justify-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2 py-2 rounded-lg hover:bg-amber-100 transition-colors font-semibold mt-1"
-          >
-            <Type className="w-3.5 h-3.5" />
-            Static Text Box
-          </button>
+          <div className="h-px bg-gray-100 w-full"></div>
+
+          {/* Static Design Group */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">Static Design Elements</h4>
+            
+            <button
+              onClick={() => setIsDrawingMode(true)}
+              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-lg transition-colors font-bold text-xs mb-3 shadow-sm"
+            >
+              <PenTool className="w-4 h-4" /> DRAW (BETA)
+            </button>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleAddField(`StaticText_${Math.floor(Math.random()*1000)}`, 'text', true, { staticText: 'Double click to edit' })}
+                className="flex flex-col items-center justify-center gap-1.5 bg-amber-50/50 text-amber-700 border border-amber-100 hover:border-amber-300 hover:bg-amber-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Type className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Text Field</span>
+              </button>
+
+              <button
+                onClick={() => setShowWordArtOptions(!showWordArtOptions)}
+                className={`flex flex-col items-center justify-center gap-1.5 bg-pink-50/50 text-pink-700 border hover:border-pink-300 hover:bg-pink-50 p-2.5 rounded-lg transition-all group ${showWordArtOptions ? 'border-pink-400 bg-pink-100/50 shadow-inner' : 'border-pink-100'}`}
+              >
+                <div className="p-1.5 bg-pink-100 text-pink-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Palette className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Word Art</span>
+              </button>
+              
+              <button
+                onClick={() => commonPhotoInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-1.5 bg-emerald-50/50 text-emerald-700 border border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-emerald-100 text-emerald-600 rounded-md group-hover:scale-110 transition-transform">
+                  <ImagePlus className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Image</span>
+              </button>
+
+              <button
+                onClick={handleAddShape}
+                className="flex flex-col items-center justify-center gap-1.5 bg-purple-50/50 text-purple-700 border border-purple-100 hover:border-purple-300 hover:bg-purple-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-purple-100 text-purple-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Square className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Shape</span>
+              </button>
+
+              <button
+                onClick={() => handleAddField(`Divider_${Math.floor(Math.random()*1000)}`, 'divider', true, { lineStyle: 'solid', borderWidth: 2, borderColor: '#d1d5db', height: 20, width: 200 })}
+                className="flex flex-col items-center justify-center gap-1.5 bg-slate-50/50 text-slate-700 border border-slate-100 hover:border-slate-300 hover:bg-slate-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-slate-100 text-slate-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Minus className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Divider</span>
+              </button>
+
+              <button
+                onClick={() => handleAddField(`StaticQR_${Math.floor(Math.random()*1000)}`, 'qrcode', true, { staticText: 'https://example.com' })}
+                className="flex flex-col items-center justify-center gap-1.5 bg-blue-50/50 text-blue-700 border border-blue-100 hover:border-blue-300 hover:bg-blue-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md group-hover:scale-110 transition-transform">
+                  <QrCode className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">QR Code</span>
+              </button>
+
+              <button
+                onClick={() => handleAddField(`StaticBarcode_${Math.floor(Math.random()*1000)}`, 'barcode', true, { staticText: '123456789' })}
+                className="flex flex-col items-center justify-center gap-1.5 bg-cyan-50/50 text-cyan-700 border border-cyan-100 hover:border-cyan-300 hover:bg-cyan-50 p-2.5 rounded-lg transition-all group"
+              >
+                <div className="p-1.5 bg-cyan-100 text-cyan-600 rounded-md group-hover:scale-110 transition-transform">
+                  <Barcode className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-semibold">Barcode</span>
+              </button>
+            </div>
+            
+            {showWordArtOptions && (
+              <div className="mt-3 p-3 bg-pink-50/30 border border-pink-100 rounded-lg">
+                <h5 className="text-[10px] font-bold text-pink-700 uppercase mb-2">Choose Word Art Style</h5>
+                <div className="grid grid-cols-2 gap-2">
+                  {WORD_ART_PRESETS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        const { label, ...styles } = preset;
+                        handleAddField(`WordArt_${Math.floor(Math.random()*1000)}`, 'text', true, { staticText: label, ...styles } as any);
+                        setShowWordArtOptions(false);
+                      }}
+                      className="p-2 bg-white border border-pink-100 rounded hover:border-pink-400 hover:shadow-sm transition-all text-center overflow-hidden"
+                      style={{ 
+                        fontFamily: preset.fontFamily, 
+                        color: preset.color, 
+                        fontStyle: preset.fontStyle || 'normal', 
+                        fontWeight: preset.fontWeight || 'normal',
+                        textTransform: (preset as any).textTransform || 'none'
+                      }}
+                    >
+                      <span className="text-xs">{preset.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <p className="text-[10px] text-gray-400 mt-2 px-1 leading-tight whitespace-normal break-words">These elements remain the same across all cards (e.g. logos, labels, backgrounds).</p>
+          </div>
           
-          <button
-            onClick={() => commonPhotoInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2 py-2 rounded-lg hover:bg-emerald-100 transition-colors font-semibold mt-1"
-          >
-            <ImagePlus className="w-3.5 h-3.5" />
-            Static Image / Logo
-          </button>
           <input 
             type="file" 
             accept="image/*" 
@@ -333,294 +757,8 @@ const FieldsPanel: React.FC<FieldsPanelProps> = ({ selectedFieldId, onSelectFiel
             onChange={handleAddCommonPhotoClick}
           />
         </div>
-        <div className="mt-2.5 pt-2.5 border-t border-gray-100">
-          <button
-            onClick={handleAddShape}
-            className="w-full flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-xs px-2 py-2 rounded-lg hover:bg-purple-100 transition-colors font-semibold"
-          >
-            <Square className="w-3.5 h-3.5" />
-            Add Shape
-          </button>
-        </div>
       </div>
 
-      {/* Edit Selected Field */}
-      {selectedField && (
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 overflow-y-auto">
-          <h3 className="text-sm font-bold text-gray-800 mb-3">Field Properties</h3>
-          <div className="flex flex-col gap-4">
-            
-            {/* Context Header */}
-            {selectedField.type !== 'shape' && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  {selectedField.isStatic ? (selectedField.type === 'text' ? 'Text Content' : 'Field Type') : 'Data Key'}
-                </label>
-                {selectedField.isStatic && selectedField.type === 'text' ? (
-                  <textarea 
-                    rows={3}
-                    value={selectedField.staticText || ''} 
-                    onChange={(e) => updateField(selectedField.id, { staticText: e.target.value })}
-                    className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-gray-800 bg-white resize-y"
-                  />
-                ) : (
-                  <input 
-                    type="text" 
-                    value={selectedField.isStatic ? 'Static Image' : selectedField.headerKey} 
-                    disabled={selectedField.isStatic}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateField(selectedField.id, { headerKey: val });
-                      if (!headers.includes(val)) {
-                        setHeaders([...headers, val]);
-                      }
-                    }}
-                    className={`w-full text-sm p-2 border border-gray-200 rounded-lg font-medium outline-none ${selectedField.isStatic ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white focus:ring-2 focus:ring-indigo-500 text-gray-800'}`}
-                  />
-                )}
-              </div>
-            )}
-            
-            {/* TEXT PROPERTIES */}
-            {selectedField.type === 'text' && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Font Family</label>
-                  <select 
-                    value={selectedField.fontFamily || 'sans-serif'}
-                    onChange={(e) => updateField(selectedField.id, { fontFamily: e.target.value })}
-                    className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                  >
-                    {fontFamilies.map(font => (
-                      <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>{font.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Font Size (px)</label>
-                    <input 
-                      type="number" 
-                      value={selectedField.fontSize} 
-                      onChange={(e) => updateField(selectedField.id, { fontSize: Number(e.target.value) })}
-                      className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Text Color</label>
-                    <input 
-                      type="color" 
-                      value={selectedField.color} 
-                      onChange={(e) => updateField(selectedField.id, { color: e.target.value })}
-                      className="w-full h-9 p-0.5 border border-gray-200 rounded-lg cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Font Weight</label>
-                  <select 
-                    value={selectedField.fontWeight}
-                    onChange={(e) => updateField(selectedField.id, { fontWeight: e.target.value })}
-                    className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="bold">Bold</option>
-                    <option value="100">Light</option>
-                    <option value="900">Black</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* IMAGE PROPERTIES */}
-            {selectedField.type === 'image' && (
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-500 mb-3">
-                  Resize the box on the canvas to set dimensions.
-                </p>
-                {selectedField.isStatic && (
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">Change Image</label>
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => handleUpdateStaticImageClick(selectedField.id, e)}
-                      className="w-full text-xs file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* SHAPE PROPERTIES */}
-            {selectedField.type === 'shape' && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Shape Type</label>
-                  <div className="grid grid-cols-5 gap-2 max-h-64 overflow-y-auto p-1 custom-scrollbar">
-                    {[
-                      { value: 'rectangle', label: 'Rectangle' },
-                      { value: 'circle', label: 'Circle' },
-                      { value: 'triangle', label: 'Triangle' },
-                      { value: 'star', label: 'Star' },
-                      { value: 'hexagon', label: 'Hexagon' },
-                      { value: 'pentagon', label: 'Pentagon' },
-                      { value: 'diamond', label: 'Diamond' },
-                      { value: 'line', label: 'Line' },
-                      { value: 'ellipse', label: 'Ellipse' },
-                      { value: 'cross', label: 'Cross' },
-                      { value: 'heart', label: 'Heart' },
-                      { value: 'arrow-right', label: 'Arrow Right' },
-                      { value: 'arrow-left', label: 'Arrow Left' },
-                      { value: 'arrow-up', label: 'Arrow Up' },
-                      { value: 'arrow-down', label: 'Arrow Down' },
-                      { value: 'shield', label: 'Shield' },
-                      { value: 'tag', label: 'Tag' },
-                      { value: 'message', label: 'Message' },
-                      { value: 'moon', label: 'Moon' },
-                      { value: 'parallelogram', label: 'Parallelogram' },
-                      { value: 'trapezoid', label: 'Trapezoid' },
-                      { value: 'octagon', label: 'Octagon' },
-                      { value: 'heptagon', label: 'Heptagon' },
-                      { value: 'nonagon', label: 'Nonagon' },
-                      { value: 'decagon', label: 'Decagon' },
-                      { value: 'dodecagon', label: 'Dodecagon' },
-                      { value: 'bookmark', label: 'Bookmark' },
-                      { value: 'flag', label: 'Flag' },
-                      { value: 'chevron-up', label: 'Chevron Up' },
-                      { value: 'chevron-down', label: 'Chevron Down' },
-                      { value: 'chevron-left', label: 'Chevron Left' },
-                      { value: 'chevron-right', label: 'Chevron Right' },
-                      { value: 'plus', label: 'Plus' },
-                      { value: 'minus', label: 'Minus' },
-                      { value: 'times', label: 'Times' },
-                      { value: 'divide', label: 'Divide' },
-                      { value: 'equals', label: 'Equals' },
-                      { value: 'home', label: 'Home' },
-                      { value: 'mail', label: 'Mail' },
-                      { value: 'user', label: 'User' },
-                      { value: 'lock', label: 'Lock' },
-                      { value: 'unlock', label: 'Unlock' },
-                      { value: 'search', label: 'Search' },
-                      { value: 'bell', label: 'Bell' },
-                      { value: 'camera', label: 'Camera' },
-                      { value: 'cloud', label: 'Cloud' },
-                      { value: 'music', label: 'Music' },
-                      { value: 'sun', label: 'Sun' },
-                      { value: 'zap', label: 'Zap' },
-                      { value: 'leaf', label: 'Leaf' }
-                    ].map((st) => (
-                      <button
-                        key={st.value}
-                        onClick={() => updateField(selectedField.id, { 
-                          shapeType: st.value as any,
-                          borderRadius: st.value === 'circle' ? 9999 : 0
-                        })}
-                        className={`group flex flex-col items-center justify-center py-2 px-1 rounded-lg border transition-all ${
-                          (selectedField.shapeType || 'rectangle') === st.value 
-                            ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' 
-                            : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50'
-                        }`}
-                        title={st.label}
-                      >
-                        <ShapePreview type={st.value} />
-                        <span className="text-[10px] font-semibold text-center leading-tight mt-1">{st.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {selectedField.shapeType !== 'line' && (
-                  <div className="flex gap-3 items-end">
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Fill Color</label>
-                      <input 
-                        type="color" 
-                        value={selectedField.backgroundColor || '#e0e7ff'} 
-                        onChange={(e) => updateField(selectedField.id, { backgroundColor: e.target.value })}
-                        disabled={selectedField.fillTransparent}
-                        className="w-full h-9 p-0.5 border border-gray-200 rounded-lg cursor-pointer disabled:opacity-50"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5 h-9">
-                      <input 
-                        type="checkbox" 
-                        id="fill-trans"
-                        checked={!!selectedField.fillTransparent}
-                        onChange={(e) => updateField(selectedField.id, { fillTransparent: e.target.checked })}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <label htmlFor="fill-trans" className="text-xs text-gray-600 font-medium">None</label>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">{selectedField.shapeType === 'line' ? 'Line Color' : 'Border Color'}</label>
-                    <input 
-                      type="color" 
-                      value={selectedField.borderColor || '#4f46e5'} 
-                      onChange={(e) => updateField(selectedField.id, { borderColor: e.target.value })}
-                      disabled={selectedField.borderTransparent}
-                      className="w-full h-9 p-0.5 border border-gray-200 rounded-lg cursor-pointer disabled:opacity-50"
-                    />
-                  </div>
-                  {selectedField.shapeType !== 'line' && (
-                    <div className="flex items-center gap-1.5 h-9">
-                      <input 
-                        type="checkbox" 
-                        id="border-trans"
-                        checked={!!selectedField.borderTransparent}
-                        onChange={(e) => updateField(selectedField.id, { borderTransparent: e.target.checked })}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <label htmlFor="border-trans" className="text-xs text-gray-600 font-medium">None</label>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">{selectedField.shapeType === 'line' ? 'Thickness' : 'Border Width'}</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={selectedField.borderWidth !== undefined ? selectedField.borderWidth : 2} 
-                      onChange={(e) => updateField(selectedField.id, { borderWidth: Number(e.target.value) })}
-                      className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                  </div>
-                  {selectedField.shapeType === 'rectangle' && (
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Corner Radius</label>
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={selectedField.borderRadius || 0} 
-                        onChange={(e) => updateField(selectedField.id, { borderRadius: Number(e.target.value) })}
-                        className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            <div className="mt-2 pt-4 border-t border-gray-100">
-              <button 
-                onClick={() => removeField(selectedField.id)}
-                className="flex items-center justify-center w-full gap-2 text-sm text-red-600 bg-white hover:bg-red-50 border border-red-200 py-2 rounded-lg font-medium transition-colors shadow-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-                Remove Field
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

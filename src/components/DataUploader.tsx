@@ -201,6 +201,16 @@ const DataUploader: React.FC = () => {
         
         {!isSingleMode ? (
           <div className="flex flex-col gap-3">
+            <div className="bg-indigo-50/60 border border-indigo-100 rounded-lg p-3 w-full shrink-0">
+              <h4 className="text-[11px] font-bold text-indigo-800 mb-1">How to Bulk Upload:</h4>
+              <ol className="text-[10px] text-indigo-900/90 list-decimal pl-3 space-y-1.5 whitespace-normal break-words">
+                <li>Upload an <strong>Excel/CSV</strong> file. It <strong>MUST</strong> have a column named <strong>id_number</strong>.</li>
+                <li>For each dynamic photo field, click <strong>Select Folder</strong> and choose the folder containing those images.</li>
+                <li>Images must be named exactly as their <strong>id_number</strong> (e.g. <strong>id_number.jpg</strong>, <strong>id_number.png</strong>, etc.).</li>
+                <li>Click <strong>Validate</strong> to check for missing images.</li>
+              </ol>
+            </div>
+
             <div 
               className="border-2 border-dashed border-indigo-200 bg-indigo-50/30 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 transition-colors group"
               onClick={() => fileInputRef.current?.click()}
@@ -253,8 +263,8 @@ const DataUploader: React.FC = () => {
                         </button>
                       </div>
                       <p className="text-[10px] text-emerald-600/80 text-center mt-2 leading-tight">
-                        Images must be named like `[id_number].jpg`<br/>
-                        <span className="opacity-75">(e.g. if id_number is E123, image must be E123.jpg)</span>
+                        Images must match exactly (e.g. <strong>[id_number].jpg</strong> or <strong>[id_number].png</strong>)<br/>
+                        <span className="opacity-75">If id_number is E123, image must be E123.jpg / E123.png</span>
                       </p>
                     </div>
                   );

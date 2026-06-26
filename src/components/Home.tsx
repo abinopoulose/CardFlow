@@ -22,8 +22,9 @@ const Logo = () => (
 );
 
 const Home: React.FC = () => {
-  const { projects, setCurrentProjectId, createProject, deleteProject } = useAppContext();
+  const { projects, setCurrentProjectId, createProject, deleteProject, deleteAllProjects } = useAppContext();
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [creationMode, setCreationMode] = useState<'theme' | 'scratch' | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -50,7 +51,7 @@ const Home: React.FC = () => {
       headers: [],
       templateImage: null,
       fields: [],
-      isSingleMode: false,
+      isSingleMode: true,
       singleData: {},
       photosMap: {}
     });
@@ -67,7 +68,7 @@ const Home: React.FC = () => {
       headers: theme.fields.map(f => f.headerKey),
       templateImage: theme.bg,
       fields: theme.fields as any,
-      isSingleMode: false,
+      isSingleMode: true,
       singleData: {},
       photosMap: {}
     });
@@ -155,6 +156,15 @@ const Home: React.FC = () => {
         <div className="border-t border-slate-200/60 pt-16 pb-20">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Recent Projects</h2>
+            {projects.length > 0 && (
+              <button 
+                onClick={() => setShowDeleteAllConfirm(true)}
+                className="flex items-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 px-4 py-2 rounded-xl font-semibold transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete All
+              </button>
+            )}
           </div>
           
           {projects.length === 0 ? (
@@ -220,6 +230,35 @@ const Home: React.FC = () => {
                 className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-rose-500/25"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Confirmation Modal */}
+      {showDeleteAllConfirm && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Delete All Projects?</h3>
+            <p className="text-slate-500 mb-6 font-medium">
+              Are you sure you want to delete all projects and saved data? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowDeleteAllConfirm(false)}
+                className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  deleteAllProjects();
+                  setShowDeleteAllConfirm(false);
+                }}
+                className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-rose-500/25"
+              >
+                Delete All
               </button>
             </div>
           </div>
