@@ -42,6 +42,7 @@ export interface Project {
   data: any[];
   headers: string[];
   templateImage: string | null;
+  previewImage?: string | null;
   originalTemplateImage?: string | null;
   backgroundType?: 'image' | 'color' | 'gradient' | 'transparent';
   backgroundColor?: string;
@@ -58,6 +59,7 @@ interface AppState {
   setCurrentProjectId: (id: string | null) => void;
   createProject: (project: Omit<Project, 'id' | 'updatedAt'>) => string;
   updateCurrentProject: (updates: Partial<Project>) => void;
+  updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   deleteAllProjects: () => void;
   currentProject: Project | null;
@@ -183,6 +185,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
+  const updateProject = (id: string, updates: Partial<Project>) => {
+    setProjects(prev => {
+      const pIndex = prev.findIndex(p => p.id === id);
+      if (pIndex === -1) return prev;
+      
+      const updatedP = { ...prev[pIndex], ...updates, updatedAt: Date.now() };
+      const newProjects = [...prev];
+      newProjects[pIndex] = updatedP;
+      return newProjects;
+    });
+  };
+
   const undo = () => {
     if (!currentProjectId || past.length === 0) return;
     setProjects(prev => {
@@ -254,6 +268,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCurrentProjectId,
         createProject,
         updateCurrentProject,
+        updateProject,
         deleteProject,
         deleteAllProjects,
         currentProject,

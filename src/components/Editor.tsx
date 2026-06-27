@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X, Layers, Database, LayoutTemplate, Frame } from 'lucide-react';
+import { ArrowLeft, Edit3, Check, Download, Eye, ChevronLeft, ChevronRight, X, Layers, Database, LayoutTemplate, Frame, Undo2, Redo2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import DataUploader from './DataUploader';
 import TemplateUploader from './TemplateUploader';
@@ -10,9 +10,10 @@ import ExportManager from './ExportManager';
 import DrawingPanel from './DrawingPanel';
 import LayersPanel from './LayersPanel';
 import type { ReactSketchCanvasRef } from 'react-sketch-canvas';
+import html2canvas from 'html2canvas';
 
 const Editor: React.FC = () => {
-  const { currentProject, setCurrentProjectId, updateCurrentProject, isDrawingMode, setIsDrawingMode } = useAppContext();
+  const { currentProject, setCurrentProjectId, updateCurrentProject, updateProject, isDrawingMode, setIsDrawingMode, undo, redo, canUndo, canRedo } = useAppContext();
   const [activeTab, setActiveTab] = useState<'fields' | 'data' | 'background' | 'layers'>('fields');
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState(currentProject?.name || '');
@@ -24,11 +25,13 @@ const Editor: React.FC = () => {
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
 
+  const sprayCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const sketchRef = React.useRef<ReactSketchCanvasRef>(null);
-  const [drawingModeType, setDrawingModeType] = useState<'select' | 'pen' | 'eraser'>('pen');
+  const [drawingModeType, setDrawingModeType] = useState<'select' | 'pen' | 'eraser' | 'spray'>('pen');
   const [strokeColor, setStrokeColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState(4);
   const [eraserWidth, setEraserWidth] = useState(20);
+  const [sprayDensity, setSprayDensity] = useState(25);
 
   if (!currentProject) return null;
 
@@ -36,7 +39,19 @@ const Editor: React.FC = () => {
     if (sketchRef.current && currentProject) {
       try {
         const paths = await sketchRef.current.exportPaths();
-        if (paths.length > 0) {
+        
+        let sprayHasContent = false;
+        if (sprayCanvasRef.current) {
+          const ctx = sprayCanvasRef.current.getContext('2d');
+          if (ctx) {
+            const data = ctx.getImageData(0,0, sprayCanvasRef.current.width, sprayCanvasRef.current.height).data;
+            for (let i = 3; i < data.length; i += 4) {
+              if (data[i] > 0) { sprayHasContent = true; break; }
+            }
+          }
+        }
+
+        if (paths.length > 0 || sprayHasContent) {
           const svgStr = await sketchRef.current.exportSvg();
           
           const targetWidth = currentProject.width * 4;
@@ -73,6 +88,11 @@ const Editor: React.FC = () => {
           
           if (ctx) {
             ctx.drawImage(img, 0, 0);
+            
+            if (sprayCanvasRef.current && sprayHasContent) {
+              ctx.drawImage(sprayCanvasRef.current, 0, 0, canvas.width, canvas.height);
+            }
+            
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             
@@ -144,6 +164,10 @@ const Editor: React.FC = () => {
         console.error(e);
       }
       sketchRef.current.clearCanvas();
+      if (sprayCanvasRef.current) {
+        const ctx = sprayCanvasRef.current.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, sprayCanvasRef.current.width, sprayCanvasRef.current.height);
+      }
       if (exitMode) {
         setIsDrawingMode(false);
       }
@@ -197,11 +221,45 @@ const Editor: React.FC = () => {
       <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm relative">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => setCurrentProjectId(null)}
+            onClick={() => {
+              const el = document.getElementById('project-canvas-container');
+              const projectId = currentProject?.id;
+              if (el && projectId) {
+                html2canvas(el, { 
+                  scale: 0.5, 
+                  useCORS: true, 
+                  logging: false, 
+                  backgroundColor: null 
+                }).then(canvas => {
+                  const previewImage = canvas.toDataURL('image/jpeg', 0.8);
+                  updateProject(projectId, { previewImage });
+                }).catch(console.error);
+              }
+              setCurrentProjectId(null);
+            }}
             className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
+
+          <div className="flex items-center gap-1 border-r border-gray-200 pr-4 mr-2">
+            <button 
+              onClick={undo}
+              disabled={!canUndo}
+              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors disabled:opacity-30"
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={redo}
+              disabled={!canRedo}
+              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors disabled:opacity-30"
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo2 className="w-5 h-5" />
+            </button>
+          </div>
           
           <div className="flex items-center gap-2">
             {isEditingName ? (
@@ -224,9 +282,7 @@ const Editor: React.FC = () => {
                 <Edit3 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             )}
-            <span className="text-xs text-gray-400 ml-4 hidden md:inline">
-              Saved {new Date(currentProject.updatedAt).toLocaleTimeString()}
-            </span>
+
           </div>
         </div>
 
@@ -328,12 +384,24 @@ const Editor: React.FC = () => {
                   setStrokeWidth={setStrokeWidth}
                   eraserWidth={eraserWidth}
                   setEraserWidth={setEraserWidth}
+                  sprayDensity={sprayDensity}
+                  setSprayDensity={setSprayDensity}
                   onUndo={() => sketchRef.current?.undo()}
                   onRedo={() => sketchRef.current?.redo()}
-                  onClear={() => sketchRef.current?.clearCanvas()}
+                  onClear={() => {
+                    sketchRef.current?.clearCanvas();
+                    if (sprayCanvasRef.current) {
+                      const ctx = sprayCanvasRef.current.getContext('2d');
+                      if (ctx) ctx.clearRect(0, 0, sprayCanvasRef.current.width, sprayCanvasRef.current.height);
+                    }
+                  }}
                   onCancel={() => {
                     setIsDrawingMode(false);
                     sketchRef.current?.clearCanvas();
+                    if (sprayCanvasRef.current) {
+                      const ctx = sprayCanvasRef.current.getContext('2d');
+                      if (ctx) ctx.clearRect(0, 0, sprayCanvasRef.current.width, sprayCanvasRef.current.height);
+                    }
                   }}
                   onSave={() => {
                     handleSaveDrawing(true);
@@ -377,10 +445,12 @@ const Editor: React.FC = () => {
             selectedFieldIds={selectedFieldIds} 
             setSelectedFieldIds={setSelectedFieldIds} 
             sketchRef={sketchRef}
+            sprayCanvasRef={sprayCanvasRef}
             drawingModeType={drawingModeType}
             strokeColor={strokeColor}
             strokeWidth={strokeWidth}
             eraserWidth={eraserWidth}
+            sprayDensity={sprayDensity}
           />
         </div>
 

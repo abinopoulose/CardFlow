@@ -14,15 +14,17 @@ interface TemplateConfiguratorProps {
   selectedFieldIds: string[];
   setSelectedFieldIds: React.Dispatch<React.SetStateAction<string[]>>;
   sketchRef?: React.RefObject<ReactSketchCanvasRef | null>;
-  drawingModeType?: 'select' | 'pen' | 'eraser';
+  sprayCanvasRef?: React.RefObject<HTMLCanvasElement | null>;
+  drawingModeType?: 'select' | 'pen' | 'eraser' | 'spray';
   strokeColor?: string;
   strokeWidth?: number;
   eraserWidth?: number;
+  sprayDensity?: number;
 }
 
 const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({ 
   selectedFieldIds, setSelectedFieldIds, 
-  sketchRef, drawingModeType, strokeColor, strokeWidth, eraserWidth 
+  sketchRef, sprayCanvasRef, drawingModeType, strokeColor, strokeWidth, eraserWidth, sprayDensity
 }) => {
   const { currentProject, updateCurrentProject, undo, redo, canUndo, canRedo, isDrawingMode } = useAppContext();
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -43,6 +45,79 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
   const [isSelecting, setIsSelecting] = useState(false);
   const [scale, setScale] = useState(1);
   const startPos = useRef<{ x: number, y: number } | null>(null);
+  
+  const isSpraying = useRef(false);
+
+  const drawSpray = (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+    if (!isSpraying.current || !sprayCanvasRef?.current) return;
+    const canvas = sprayCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate exact coordinates relative to canvas internal resolution
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.fillStyle = strokeColor || '#000000';
+    const density = sprayDensity || 25; // particles per move
+    const svgToCanvasScale = 4; // Because the spray canvas is exactly 4x the SVG internal size
+    const radius = ((strokeWidth || 4) / 2) * svgToCanvasScale;
+    
+    for (let i = 0; i < density; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = Math.random() * radius;
+      const px = x + Math.cos(angle) * r;
+      const py = y + Math.sin(angle) * r;
+      
+      ctx.beginPath();
+      ctx.arc(px, py, 1.5 * svgToCanvasScale, 0, Math.PI * 2); // 1.5px particles scaled to 4x internal canvas
+      ctx.fill();
+    }
+  };
+
+  const isErasing = useRef(false);
+  const lastErasePos = useRef<{x: number, y: number} | null>(null);
+
+  const drawErase = (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+    if (!isErasing.current || !sprayCanvasRef?.current) return;
+    const canvas = sprayCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const svgToCanvasScale = 4;
+    const currentEraserRadius = ((eraserWidth || 20) / 2) * svgToCanvasScale;
+    
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = currentEraserRadius * 2;
+    
+    if (lastErasePos.current) {
+        ctx.moveTo(lastErasePos.current.x, lastErasePos.current.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    } else {
+        ctx.arc(x, y, currentEraserRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    ctx.globalCompositeOperation = 'source-over'; // Reset
+    lastErasePos.current = { x, y };
+  };
 
   const fields = currentProject?.fields || [];
 
@@ -56,6 +131,103 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
 
   const updateField = (id: string, updates: Partial<FieldConfig>) => {
     setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+  };
+
+  const getDynamicCursor = () => {
+    if (!isDrawingMode || drawingModeType === 'select') return '';
+    
+    let svg = '';
+    let hotspotX = 0;
+    let hotspotY = 0;
+
+    if (drawingModeType === 'spray') {
+      const size = (strokeWidth || 4) * scale;
+      const radius = size; // Spray feels wider
+      const color = strokeColor || '#000000';
+      
+      const cx = Math.max(radius + 8, 16);
+      const cy = Math.max(radius + 8, 32);
+      
+      hotspotX = Math.round(cx);
+      hotspotY = Math.round(cy);
+      
+      const boxWidth = Math.max(cx + 32, cx + radius + 8);
+      const boxHeight = Math.max(cy + 24, cy + radius + 8);
+      
+      svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${boxWidth}" height="${boxHeight}" viewBox="0 0 ${boxWidth} ${boxHeight}">
+          <g transform="translate(${cx - 7}, ${cy - 5})">
+            <g stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="M3 3h.01"/><path d="M7 3h.01"/><path d="M11 3h.01"/><path d="M3 7h.01"/><path d="M7 7h.01"/><path d="M11 7h.01"/><rect width="4" height="4" x="15" y="5" rx="1"/><path d="m19 9 2 2v10c0 .6-.4 1-1 1h-6c-.6 0-1-.4-1-1V11l2-2"/><path d="m13 14 8-2.5"/>
+            </g>
+            <g stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="M3 3h.01"/><path d="M7 3h.01"/><path d="M11 3h.01"/><path d="M3 7h.01"/><path d="M7 7h.01"/><path d="M11 7h.01"/><rect width="4" height="4" x="15" y="5" rx="1"/><path d="m19 9 2 2v10c0 .6-.4 1-1 1h-6c-.6 0-1-.4-1-1V11l2-2"/><path d="m13 14 8-2.5"/>
+            </g>
+          </g>
+        </svg>
+      `;
+    } else if (drawingModeType === 'pen') {
+      const size = (strokeWidth || 4) * scale;
+      const radius = size / 2;
+      const color = strokeColor || '#000000';
+      
+      const cx = Math.max(radius + 8, 16);
+      const cy = Math.max(radius + 8, 32);
+      
+      hotspotX = Math.round(cx);
+      hotspotY = Math.round(cy);
+      
+      const boxWidth = Math.max(cx + 32, cx + radius + 8);
+      const boxHeight = Math.max(cy + 8, cy + radius + 8);
+      
+      svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${boxWidth}" height="${boxHeight}" viewBox="0 0 ${boxWidth} ${boxHeight}">
+          <g transform="translate(${cx - 2}, ${cy - 22})">
+            <g stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              <path d="m15 5 4 4"/>
+            </g>
+            <g stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="${color}">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              <path d="m15 5 4 4"/>
+            </g>
+          </g>
+          <circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" stroke="white" stroke-width="1.5" stroke-opacity="0.9" />
+        </svg>
+      `;
+    } else {
+      const size = (eraserWidth || 20) * scale;
+      const radius = size / 2;
+      
+      const cx = Math.max(radius + 8, 16);
+      const cy = Math.max(radius + 8, 32); 
+      
+      hotspotX = Math.round(cx);
+      hotspotY = Math.round(cy);
+      
+      const boxWidth = Math.max(cx + 32, cx + radius + 8);
+      const boxHeight = Math.max(cy + 8, cy + radius + 8);
+      
+      svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${boxWidth}" height="${boxHeight}" viewBox="0 0 ${boxWidth} ${boxHeight}">
+          <g transform="translate(${cx - 7}, ${cy - 21})">
+            <g stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+              <path d="M22 21H7"/>
+              <path d="m5 11 9 9"/>
+            </g>
+            <g stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+              <path d="M22 21H7"/>
+              <path d="m5 11 9 9"/>
+            </g>
+          </g>
+          <circle cx="${cx}" cy="${cy}" r="${radius}" fill="rgba(255,255,255,0.6)" stroke="rgba(0,0,0,0.4)" stroke-width="1.5" />
+        </svg>
+      `;
+    }
+
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}") ${hotspotX} ${hotspotY}, auto`;
   };
 
   useEffect(() => {
@@ -134,6 +306,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
         panning={{ activationKeys: [' '] }} // Hold space to pan
         wheel={{ disabled: true }}
         pinch={{ disabled: true }}
+        doubleClick={{ disabled: true }}
         onTransform={(ref) => setScale(ref.state.scale)}
         onInit={(ref) => setScale(ref.state.scale)}
       >
@@ -156,24 +329,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
           };
           return (
           <>
-            <div className="absolute top-4 left-4 z-50 flex gap-2 bg-white/90 backdrop-blur shadow-sm border border-gray-200 p-1.5 rounded-xl">
-              <button 
-                onClick={undo}
-                disabled={!canUndo}
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors disabled:opacity-30"
-                title="Undo (Ctrl+Z)"
-              >
-                <Undo2 className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={redo}
-                disabled={!canRedo}
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors disabled:opacity-30"
-                title="Redo (Ctrl+Y)"
-              >
-                <Redo2 className="w-5 h-5" />
-              </button>
-            </div>
+
 
             <div className="absolute bottom-6 right-6 z-50 flex gap-3 bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full items-center">
               <input 
@@ -210,6 +366,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
               <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                 <div className="flex items-center justify-center w-full h-full p-12">
                   <div 
+                    id="project-canvas-container"
                     className="relative shadow-2xl overflow-hidden shrink-0 cursor-default select-none"
                     style={{ 
                       width: `${width}px`, 
@@ -481,7 +638,44 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                     ))}
 
                     {isDrawingMode && (
-                      <div className={`absolute inset-0 z-50 ${drawingModeType === 'select' ? 'pointer-events-none' : 'cursor-crosshair'}`}>
+                      <div 
+                        className={`absolute inset-0 z-50 ${drawingModeType === 'select' ? 'pointer-events-none' : ''}`}
+                        style={{
+                           cursor: getDynamicCursor() || 'default'
+                        }}
+                        onPointerDownCapture={(e) => {
+                           if (drawingModeType === 'spray') {
+                             isSpraying.current = true;
+                             drawSpray(e);
+                           } else if (drawingModeType === 'eraser') {
+                             isErasing.current = true;
+                             drawErase(e);
+                           }
+                        }}
+                        onPointerMoveCapture={(e) => {
+                           if (drawingModeType === 'spray') {
+                             drawSpray(e);
+                           } else if (drawingModeType === 'eraser') {
+                             drawErase(e);
+                           }
+                        }}
+                        onPointerUpCapture={() => {
+                           isSpraying.current = false;
+                           isErasing.current = false;
+                           lastErasePos.current = null;
+                        }}
+                        onPointerLeaveCapture={() => {
+                           isSpraying.current = false;
+                           isErasing.current = false;
+                           lastErasePos.current = null;
+                        }}
+                      >
+                        <canvas
+                           ref={sprayCanvasRef}
+                           width={(currentProject?.width || 0) * 4}
+                           height={(currentProject?.height || 0) * 4}
+                           style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+                        />
                         <ReactSketchCanvas
                           ref={sketchRef}
                           width="100%"
@@ -490,7 +684,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                           eraserWidth={eraserWidth}
                           strokeColor={strokeColor}
                           canvasColor="transparent"
-                          className={`!border-none !bg-transparent ${drawingModeType === 'select' ? 'pointer-events-none' : 'pointer-events-auto'}`}
+                          className={`!border-none !bg-transparent ${drawingModeType === 'select' || drawingModeType === 'spray' ? 'pointer-events-none' : 'pointer-events-auto'}`}
                           preserveBackgroundImageAspectRatio="none"
                           exportWithBackgroundImage={false}
                           style={{ touchAction: 'none' }}

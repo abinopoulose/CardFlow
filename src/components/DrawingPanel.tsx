@@ -1,5 +1,5 @@
 import React from 'react';
-import { PenTool, Eraser, Undo2, Redo2, Trash2, Check, X, MousePointer2 } from 'lucide-react';
+import { PenTool, Eraser, Undo2, Redo2, Trash2, Check, X, MousePointer2, SprayCan } from 'lucide-react';
 
 interface DrawingPanelProps {
   onCancel: () => void;
@@ -7,20 +7,23 @@ interface DrawingPanelProps {
   onUndo: () => void;
   onRedo: () => void;
   onClear: () => void;
-  mode: 'select' | 'pen' | 'eraser';
-  setMode: (mode: 'select' | 'pen' | 'eraser') => void;
+  mode: 'select' | 'pen' | 'eraser' | 'spray';
+  setMode: (mode: 'select' | 'pen' | 'eraser' | 'spray') => void;
   strokeColor: string;
   setStrokeColor: (color: string) => void;
   strokeWidth: number;
   setStrokeWidth: (width: number) => void;
   eraserWidth: number;
   setEraserWidth: (width: number) => void;
+  sprayDensity: number;
+  setSprayDensity: (density: number) => void;
 }
 
 const DrawingPanel: React.FC<DrawingPanelProps> = ({
   onCancel, onSave, onUndo, onRedo, onClear,
   mode, setMode, strokeColor, setStrokeColor,
-  strokeWidth, setStrokeWidth, eraserWidth, setEraserWidth
+  strokeWidth, setStrokeWidth, eraserWidth, setEraserWidth,
+  sprayDensity, setSprayDensity
 }) => {
   return (
     <div className="flex flex-col gap-6">
@@ -35,7 +38,7 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-6">
+        <div className="grid grid-cols-2 gap-2 mb-6">
           <button
             onClick={() => setMode('select')}
             className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg transition-all ${mode === 'select' ? 'bg-indigo-100 text-indigo-700 font-bold shadow-inner' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
@@ -57,9 +60,16 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({
             <Eraser className="w-5 h-5" />
             <span className="text-xs">Eraser</span>
           </button>
+          <button
+            onClick={() => setMode('spray')}
+            className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg transition-all ${mode === 'spray' ? 'bg-purple-100 text-purple-700 font-bold shadow-inner' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+          >
+            <SprayCan className="w-5 h-5" />
+            <span className="text-xs">Spray</span>
+          </button>
         </div>
 
-        {mode === 'pen' && (
+        {(mode === 'pen' || mode === 'spray') && (
           <div className="space-y-4 mb-6">
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -81,12 +91,27 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({
               </div>
               <input
                 type="range"
-                min="1" max="50"
+                min="1" max="100"
                 value={strokeWidth}
                 onChange={(e) => setStrokeWidth(Number(e.target.value))}
                 className="w-full"
               />
             </div>
+            
+            {mode === 'spray' && (
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-gray-500">PARTICLES / MOVE ({sprayDensity})</span>
+                </div>
+                <input
+                  type="range"
+                  min="5" max="150"
+                  value={sprayDensity}
+                  onChange={(e) => setSprayDensity(Number(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -131,7 +156,7 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({
           >
             <Check className="w-4 h-4" /> Save Drawing
           </button>
-          <p className="text-[10px] text-gray-400 mt-2 text-center leading-tight">
+          <p className="text-[10px] text-gray-400 mt-2 text-left leading-tight whitespace-normal">
             Clicking Save will finalize your drawing and return you to the fields panel. To move elements without saving, switch to Select mode.
           </p>
         </div>

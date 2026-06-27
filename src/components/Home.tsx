@@ -177,13 +177,26 @@ const Home: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {projects.map(p => (
                 <div key={p.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-indigo-100 transition-all group cursor-pointer flex flex-col" onClick={() => openProject(p.id)}>
-                  <div className="h-40 bg-slate-100 relative flex items-center justify-center overflow-hidden">
-                    {p.templateImage ? (
-                      <img src={p.templateImage} alt="bg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                  <div 
+                    className="h-48 relative flex items-center justify-center overflow-hidden p-2"
+                    style={{
+                      backgroundColor: p.backgroundType === 'color' ? p.backgroundColor : (p.backgroundType === 'transparent' ? '#f8fafc' : '#ffffff'),
+                      backgroundImage: p.backgroundType === 'gradient' && p.backgroundGradient ? `linear-gradient(${p.backgroundGradient.direction}, ${p.backgroundGradient.colors.join(', ')})` : 'none'
+                    }}
+                  >
+                    {p.previewImage || p.templateImage ? (
+                      <img src={p.previewImage || p.templateImage || ''} alt="bg" className="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-700 ease-out" />
                     ) : (
-                      <Square className="w-12 h-12 text-slate-300" />
+                      <div 
+                        className="w-full h-full shadow-sm border border-slate-200/50"
+                        style={{
+                           aspectRatio: `${p.width} / ${p.height}`,
+                           backgroundColor: p.backgroundType === 'color' ? p.backgroundColor : '#ffffff',
+                           backgroundImage: p.backgroundType === 'gradient' && p.backgroundGradient ? `linear-gradient(${p.backgroundGradient.direction}, ${p.backgroundGradient.colors.join(', ')})` : 'none'
+                        }}
+                      />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
