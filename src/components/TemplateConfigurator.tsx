@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Rnd } from 'react-rnd';
-import { Image as ImageIcon, Undo2, Redo2, QrCode, Barcode as BarcodeIcon, Maximize } from 'lucide-react';
+import { Image as ImageIcon, QrCode, Barcode as BarcodeIcon, Maximize } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import Barcode from 'react-barcode';
 import { useAppContext, type FieldConfig } from '../context/AppContext';
@@ -26,7 +26,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
   selectedFieldIds, setSelectedFieldIds, 
   sketchRef, sprayCanvasRef, drawingModeType, strokeColor, strokeWidth, eraserWidth, sprayDensity
 }) => {
-  const { currentProject, updateCurrentProject, undo, redo, canUndo, canRedo, isDrawingMode } = useAppContext();
+  const { currentProject, updateCurrentProject, undo, redo, isDrawingMode } = useAppContext();
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(null);
 
@@ -643,7 +643,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                         style={{
                            cursor: getDynamicCursor() || 'default'
                         }}
-                        onPointerDownCapture={(e) => {
+                        onPointerDownCapture={(e: React.PointerEvent<HTMLDivElement>) => {
                            if (drawingModeType === 'spray') {
                              isSpraying.current = true;
                              drawSpray(e);
@@ -652,7 +652,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                              drawErase(e);
                            }
                         }}
-                        onPointerMoveCapture={(e) => {
+                        onPointerMoveCapture={(e: React.PointerEvent<HTMLDivElement>) => {
                            if (drawingModeType === 'spray') {
                              drawSpray(e);
                            } else if (drawingModeType === 'eraser') {
@@ -664,7 +664,7 @@ const TemplateConfigurator: React.FC<TemplateConfiguratorProps> = ({
                            isErasing.current = false;
                            lastErasePos.current = null;
                         }}
-                        onPointerLeaveCapture={() => {
+                        onPointerLeave={() => {
                            isSpraying.current = false;
                            isErasing.current = false;
                            lastErasePos.current = null;

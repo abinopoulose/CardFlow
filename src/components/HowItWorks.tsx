@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Layers, Image as ImageIcon, FileDown, Brush, Sparkles, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Layers, Image as ImageIcon, FileDown, Sparkles, ShieldCheck } from 'lucide-react';
 
 interface HowItWorksProps {
   onBack: () => void;
