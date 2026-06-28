@@ -9,7 +9,6 @@ import Previewer from './Previewer';
 import ExportManager from '../export/ExportManager';
 import DrawingPanel from '../canvas/DrawingPanel';
 import LayersPanel from '../panels/LayersPanel';
-import type { ReactSketchCanvasRef } from 'react-sketch-canvas';
 import { useDrawing } from '../../hooks/useDrawing';
 import { useProjectThumbnail } from '../../hooks/useProjectThumbnail';
 

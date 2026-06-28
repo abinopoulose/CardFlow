@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import type { ReactSketchCanvasRef } from 'react-sketch-canvas';
 import type { Project } from '../context/AppContext';
 
