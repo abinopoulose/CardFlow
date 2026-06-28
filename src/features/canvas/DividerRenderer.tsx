@@ -1,5 +1,5 @@
 import React from 'react';
-import type { FieldConfig } from '../context/AppContext';
+import type { FieldConfig } from '../../context/AppContext';
 
 interface DividerRendererProps {
   field: FieldConfig;

@@ -1,6 +1,6 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
-import { type FieldConfig } from '../context/AppContext';
+import { type FieldConfig } from '../../context/AppContext';
 
 interface ShapeRendererProps {
   field: FieldConfig;

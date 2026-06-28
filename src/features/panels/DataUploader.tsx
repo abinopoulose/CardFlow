@@ -2,8 +2,8 @@
 import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { UploadCloud, FileText, User, Image as ImageIcon, ImagePlus, Type, Database, Plus, Download } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
-import CropModal from './CropModal';
+import { useAppContext } from '../../context/AppContext';
+import CropModal from '../project/CropModal';
 
 const DataUploader: React.FC = () => {
   const { currentProject, updateCurrentProject } = useAppContext();

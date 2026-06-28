@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Wand2, Sparkles } from 'lucide-react';
-import CreateProjectModal from './CreateProjectModal';
+import CreateProjectModal from '../project/CreateProjectModal';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg 

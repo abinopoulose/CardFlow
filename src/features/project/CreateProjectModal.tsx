@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LayoutTemplate, Square, ArrowRight } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
-import { prebuiltThemes } from './ThemeSelector';
+import { useAppContext } from '../../context/AppContext';
+import { prebuiltThemes } from '../panels/ThemeSelector';
 
 interface CreateProjectModalProps {
   onClose: () => void;

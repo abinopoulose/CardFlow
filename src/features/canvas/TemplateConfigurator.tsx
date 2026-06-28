@@ -3,11 +3,11 @@ import { Rnd } from 'react-rnd';
 import { Image as ImageIcon, QrCode, Barcode as BarcodeIcon, Maximize } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import Barcode from 'react-barcode';
-import { useAppContext, type FieldConfig } from '../context/AppContext';
+import { useAppContext, type FieldConfig } from '../../context/AppContext';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import ShapeRenderer from './ShapeRenderer';
 import DividerRenderer from './DividerRenderer';
-import PropertiesBar from './PropertiesBar';
+import PropertiesBar from '../editor/PropertiesBar';
 import { ReactSketchCanvas, type ReactSketchCanvasRef } from 'react-sketch-canvas';
 
 interface TemplateConfiguratorProps {

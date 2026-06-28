@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Trash2, LayoutTemplate, Plus } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../../context/AppContext';
 import CreateProjectModal from './CreateProjectModal';
 
 interface MyProjectsProps {

@@ -1,9 +1,9 @@
 import React from 'react'
 import { AppProvider, useAppContext } from './context/AppContext'
-import Home from './components/Home'
-import Editor from './components/Editor'
-import HowItWorks from './components/HowItWorks'
-import MyProjects from './components/MyProjects'
+import Home from './features/home/Home'
+import Editor from './features/editor/Editor'
+import HowItWorks from './features/home/HowItWorks'
+import MyProjects from './features/project/MyProjects'
 
 const Main: React.FC = () => {
   const { currentProjectId } = useAppContext();

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Type, Image as ImageIcon, QrCode, Square, Minus, Palette, ImagePlus, PenTool, Barcode } from 'lucide-react';
-import { useAppContext, type FieldConfig } from '../context/AppContext';
-import CropModal from './CropModal';
+import { useAppContext, type FieldConfig } from '../../context/AppContext';
+import CropModal from '../project/CropModal';
 
 interface FieldsPanelProps {
   selectedFieldId: string | null;

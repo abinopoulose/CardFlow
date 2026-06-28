@@ -1,9 +1,9 @@
 import React from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../../context/AppContext';
 import { GripVertical, Image as ImageIcon, Type, QrCode, PenTool, Barcode, Eye, EyeOff, Search, Database } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import ShapeRenderer from './ShapeRenderer';
-import DividerRenderer from './DividerRenderer';
+import ShapeRenderer from '../canvas/ShapeRenderer';
+import DividerRenderer from '../canvas/DividerRenderer';
 
 const LayersPanel: React.FC = () => {
   const { currentProject, updateCurrentProject } = useAppContext();

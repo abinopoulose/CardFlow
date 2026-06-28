@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Maximize2, X } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../../context/AppContext';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import ShapeRenderer from './ShapeRenderer';
-import DividerRenderer from './DividerRenderer';
+import ShapeRenderer from '../canvas/ShapeRenderer';
+import DividerRenderer from '../canvas/DividerRenderer';
 import { QRCodeSVG } from 'qrcode.react';
 import Barcode from 'react-barcode';
 
